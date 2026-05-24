@@ -31,7 +31,7 @@ export function useLoginMutation<
 >(options?: UseLoginMutationOptions<TVariables, TContext>) {
   const { axiosConfig, onSuccess, ...mutationOptions } = options || {};
 
-  return useApiMutation<LoginResponse, ErrorResponse, TVariables, TContext>("/login", "POST", {
+  return useApiMutation<LoginResponse, ErrorResponse, TVariables, TContext>("/api/login", "POST", {
     ...mutationOptions,
     axiosConfig: {
       ...axiosConfig,
