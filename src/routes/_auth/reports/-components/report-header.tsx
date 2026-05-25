@@ -1,16 +1,11 @@
-import { CalendarDays, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CalendarDays } from "lucide-react";
 
 export function ReportHeader({
   date,
   onDateChange,
-  onGenerate,
-  isGenerating,
 }: {
   date: string;
   onDateChange: (value: string) => void;
-  onGenerate: () => void;
-  isGenerating: boolean;
 }) {
   return (
     <section className="space-y-4">
@@ -39,16 +34,6 @@ export function ReportHeader({
             value={date}
           />
         </label>
-
-        <Button
-          className="h-11 w-full sm:mt-auto sm:w-auto"
-          disabled={isGenerating}
-          onClick={onGenerate}
-          type="button"
-        >
-          <Sparkles className="size-4" />
-          {isGenerating ? "Running report..." : "Generate report"}
-        </Button>
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useDeferredValue } from "react";
-import { Flame, Search } from "lucide-react";
+import { Clock3, Flame, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRecentMealsQuery } from "../../-hooks/useRecentMealsQuery";
 import { formatMealType } from "../../-hooks/add-meal.helpers";
@@ -36,9 +37,10 @@ export function RecentMealPicker({
         {recentMealsQuery.isLoading ? (
           <p className="text-sm text-muted-foreground">Loading recent meals...</p>
         ) : meals.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {deferredQuery ? "No meals found." : "No recent meals yet."}
-          </p>
+          <RecentMealsEmptyState
+            hasQuery={Boolean(deferredQuery)}
+            onClearQuery={() => setQuery("")}
+          />
         ) : (
           meals.map((meal) => {
             const isSelected = selectedMealId === meal.id;
@@ -72,6 +74,39 @@ export function RecentMealPicker({
           })
         )}
       </div>
+    </div>
+  );
+}
+
+function RecentMealsEmptyState({
+  hasQuery,
+  onClearQuery,
+}: {
+  hasQuery: boolean;
+  onClearQuery: () => void;
+}) {
+  return (
+    <div className="flex min-h-36 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 px-4 py-6 text-center sm:min-h-40 sm:px-6">
+      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Clock3 className="size-4.5" />
+      </div>
+
+      <div className="mt-3 space-y-1">
+        <p className="text-sm font-semibold text-foreground">
+          {hasQuery ? "No matching meals found" : "No recent meals yet"}
+        </p>
+        <p className="text-sm leading-6 text-muted-foreground">
+          {hasQuery
+            ? "Try a shorter keyword or clear the search to browse all recent meals."
+            : "Meals you log today will appear here for quick reuse next time."}
+        </p>
+      </div>
+
+      {hasQuery ? (
+        <Button className="mt-4" onClick={onClearQuery} size="sm" type="button" variant="outline">
+          Clear search
+        </Button>
+      ) : null}
     </div>
   );
 }

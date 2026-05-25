@@ -30,9 +30,7 @@ export function ReportsPage() {
     <div className="mx-auto min-w-0 max-w-7xl space-y-5 overflow-x-hidden px-4 py-4 sm:space-y-6 sm:px-5 lg:px-6">
       <ReportHeader
         date={date}
-        isGenerating={runDailyReportMutation.isPending}
         onDateChange={setDate}
-        onGenerate={handleGenerateReport}
       />
 
       {runDailyReportMutation.isSuccess ? (
