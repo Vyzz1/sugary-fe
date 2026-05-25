@@ -10,6 +10,13 @@ export interface CreateMealRequestPayload {
   source_meal_id?: number;
 }
 
+export interface UpdateMealRequestPayload {
+  dish_name: string;
+  meal_type: MealType;
+  recorded_at?: string;
+  image_url?: string | null;
+}
+
 export function inferDefaultMealType(date = new Date()): MealType {
   const hour = date.getHours();
 
@@ -58,6 +65,16 @@ export function toOptionalIsoString(datetimeLocalValue?: string) {
   }
 
   return new Date(datetimeLocalValue).toISOString();
+}
+
+export function toDateTimeLocalValue(isoString?: string) {
+  if (!isoString) {
+    return "";
+  }
+
+  const date = new Date(isoString);
+  const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+  return localTime.toISOString().slice(0, 16);
 }
 
 export function extractPublicUrl(uploadResponse: unknown): string {
@@ -114,4 +131,13 @@ export function buildCreateMealPayload(input: CreateMealRequestPayload): CreateM
     image_url: input.source_meal_id ? undefined : input.image_url,
     source_meal_id: input.source_meal_id,
   }) as CreateMealRequestPayload;
+}
+
+export function buildUpdateMealPayload(input: UpdateMealRequestPayload): UpdateMealRequestPayload {
+  return {
+    dish_name: input.dish_name.trim(),
+    meal_type: input.meal_type,
+    recorded_at: input.recorded_at,
+    image_url: input.image_url ?? null,
+  };
 }

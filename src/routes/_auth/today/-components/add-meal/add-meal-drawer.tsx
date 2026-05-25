@@ -25,7 +25,7 @@ export function AddMealDrawer({
 
   return (
     <div className="md:hidden">
-      <Drawer onOpenChange={onOpenChange} open={open}>
+      <Drawer onOpenChange={onOpenChange} open={open} repositionInputs={false}>
         <DrawerContent className="flex max-h-[calc(100dvh-0.75rem)] flex-col overflow-hidden">
           <DrawerHeader className="shrink-0">
             <DrawerTitle>{title}</DrawerTitle>

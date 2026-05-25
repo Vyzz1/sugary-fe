@@ -1,13 +1,27 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { Activity, AlertTriangle, CalendarDays, Flame, Soup } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getErrorMessage } from "@/lib/error";
 import { AddMealDialog } from "./add-meal/add-meal-dialog";
 import { AddMealDrawer } from "./add-meal/add-meal-drawer";
 import { AddMealForm } from "./add-meal/add-meal-form";
+import { EditAnalysisForm } from "./edit-analysis-form";
 import {
   AddMealTrigger,
   type AddMealTriggerIntent,
 } from "./add-meal/add-meal-trigger";
+import { useDeleteMealMutation } from "../-hooks/useDeleteMealMutation";
 import { useTodayMealsQuery } from "../-hooks/useTodayMealsQuery";
 import { TodayMealCard } from "./today-meal-card";
 import type { TodayMeal } from "../-queries/today.query";
@@ -22,12 +36,21 @@ export function TodayPage() {
     return window.innerWidth >= 640;
   });
   const [isAddMealOpen, setIsAddMealOpen] = useState(false);
+  const [isEditMealOpen, setIsEditMealOpen] = useState(false);
+  const [isEditAnalysisOpen, setIsEditAnalysisOpen] = useState(false);
   const [addMealSessionKey, setAddMealSessionKey] = useState(0);
+  const [editMealSessionKey, setEditMealSessionKey] = useState(0);
+  const [editAnalysisSessionKey, setEditAnalysisSessionKey] = useState(0);
   const [defaultTab, setDefaultTab] = useState<"new" | "recent">("new");
   const [defaultImageIntent, setDefaultImageIntent] = useState<ImagePickerIntent>("manual");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [mealPendingDelete, setMealPendingDelete] = useState<TodayMeal | null>(null);
+  const [mealEditing, setMealEditing] = useState<TodayMeal | null>(null);
+  const [mealEditingAnalysis, setMealEditingAnalysis] = useState<TodayMeal | null>(null);
   const isMobile = useIsMobile();
   const date = getLocalDateString();
   const todayMealsQuery = useTodayMealsQuery(date);
+  const deleteMealMutation = useDeleteMealMutation(date);
 
   if (todayMealsQuery.isLoading) {
     return <TodayLoadingState />;
@@ -63,6 +86,48 @@ export function TodayPage() {
 
     setAddMealSessionKey((current) => current + 1);
     setIsAddMealOpen(true);
+  };
+
+  const handleDeleteMeal = async () => {
+    if (!mealPendingDelete) {
+      return;
+    }
+
+    try {
+      await deleteMealMutation.mutateAsync(mealPendingDelete.id);
+      toast.success("Meal deleted successfully.");
+      setIsDeleteDialogOpen(false);
+      setMealPendingDelete(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to delete meal right now."));
+    }
+  };
+
+  const handleOpenEditMeal = (meal: TodayMeal) => {
+    setMealEditing(meal);
+    setEditMealSessionKey((current) => current + 1);
+    setIsEditMealOpen(true);
+  };
+
+  const handleOpenEditAnalysis = (meal: TodayMeal) => {
+    setMealEditingAnalysis(meal);
+    setEditAnalysisSessionKey((current) => current + 1);
+    setIsEditAnalysisOpen(true);
+  };
+
+  const handleOpenDeleteDialog = (meal: TodayMeal) => {
+    setMealPendingDelete(meal);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    setIsDeleteDialogOpen(open);
+
+    if (!open) {
+      window.setTimeout(() => {
+        setMealPendingDelete(null);
+      }, 200);
+    }
   };
 
   return (
@@ -117,7 +182,16 @@ export function TodayPage() {
       <section className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr] xl:gap-6">
         <div className="space-y-3 sm:space-y-4">
           {meals.length > 0 ? (
-            meals.map((meal) => <TodayMealCard key={meal.id} meal={meal} />)
+            meals.map((meal) => (
+              <TodayMealCard
+                key={meal.id}
+                isDeleting={deleteMealMutation.isPending && deleteMealMutation.variables === meal.id}
+                meal={meal}
+                onEdit={handleOpenEditMeal}
+                onEditAnalysis={handleOpenEditAnalysis}
+                onDelete={handleOpenDeleteDialog}
+              />
+            ))
           ) : (
             <EmptyTodayState onAddFirstMeal={() => openAddMeal("first")} />
           )}
@@ -192,36 +266,149 @@ export function TodayPage() {
       />
 
       {isMobile ? (
-        <AddMealDrawer
-          description="Take a photo, upload an image, or reuse a recent meal."
-          onOpenChange={setIsAddMealOpen}
-          open={isAddMealOpen}
-          title="Add meal"
-        >
-          <AddMealForm
-            key={addMealSessionKey}
-            dateKey={meta?.date ?? date}
-            defaultIntent={defaultImageIntent}
-            defaultTab={defaultTab}
-            onSuccess={() => setIsAddMealOpen(false)}
-          />
-        </AddMealDrawer>
+        <>
+          <AddMealDrawer
+            description="Take a photo, upload an image, or reuse a recent meal."
+            onOpenChange={setIsAddMealOpen}
+            open={isAddMealOpen}
+            title="Add meal"
+          >
+            <AddMealForm
+              key={addMealSessionKey}
+              dateKey={meta?.date ?? date}
+              defaultIntent={defaultImageIntent}
+              defaultTab={defaultTab}
+              onSuccess={() => setIsAddMealOpen(false)}
+            />
+          </AddMealDrawer>
+          <AddMealDrawer
+            description="Update meal details, image, and recorded time."
+            onOpenChange={(open) => {
+              setIsEditMealOpen(open);
+              if (!open) {
+                setMealEditing(null);
+              }
+            }}
+            open={isEditMealOpen}
+            title="Edit meal"
+          >
+            <AddMealForm
+              key={editMealSessionKey}
+              dateKey={meta?.date ?? date}
+              defaultIntent="manual"
+              defaultTab="new"
+              initialMeal={mealEditing}
+              mode="edit"
+              onSuccess={() => {
+                setIsEditMealOpen(false);
+                setMealEditing(null);
+              }}
+            />
+          </AddMealDrawer>
+          <AddMealDrawer
+            description="Adjust the AI nutrition estimates for this meal."
+            onOpenChange={(open) => {
+              setIsEditAnalysisOpen(open);
+              if (!open) {
+                setMealEditingAnalysis(null);
+              }
+            }}
+            open={isEditAnalysisOpen}
+            title="Edit analysis"
+          >
+            <EditAnalysisForm
+              key={editAnalysisSessionKey}
+              dateKey={meta?.date ?? date}
+              meal={mealEditingAnalysis}
+              onSuccess={() => {
+                setIsEditAnalysisOpen(false);
+                setMealEditingAnalysis(null);
+              }}
+            />
+          </AddMealDrawer>
+        </>
       ) : (
-        <AddMealDialog
-          description="Take a photo, upload an image, or reuse a recent meal."
-          onOpenChange={setIsAddMealOpen}
-          open={isAddMealOpen}
-          title="Add meal"
-        >
-          <AddMealForm
-            key={addMealSessionKey}
-            dateKey={meta?.date ?? date}
-            defaultIntent={defaultImageIntent}
-            defaultTab={defaultTab}
-            onSuccess={() => setIsAddMealOpen(false)}
-          />
-        </AddMealDialog>
+        <>
+          <AddMealDialog
+            description="Take a photo, upload an image, or reuse a recent meal."
+            onOpenChange={setIsAddMealOpen}
+            open={isAddMealOpen}
+            title="Add meal"
+          >
+            <AddMealForm
+              key={addMealSessionKey}
+              dateKey={meta?.date ?? date}
+              defaultIntent={defaultImageIntent}
+              defaultTab={defaultTab}
+              onSuccess={() => setIsAddMealOpen(false)}
+            />
+          </AddMealDialog>
+          <AddMealDialog
+            description="Update meal details, image, and recorded time."
+            onOpenChange={(open) => {
+              setIsEditMealOpen(open);
+              if (!open) {
+                setMealEditing(null);
+              }
+            }}
+            open={isEditMealOpen}
+            title="Edit meal"
+          >
+            <AddMealForm
+              key={editMealSessionKey}
+              dateKey={meta?.date ?? date}
+              defaultIntent="manual"
+              defaultTab="new"
+              initialMeal={mealEditing}
+              mode="edit"
+              onSuccess={() => {
+                setIsEditMealOpen(false);
+                setMealEditing(null);
+              }}
+            />
+          </AddMealDialog>
+          <AddMealDialog
+            description="Adjust the AI nutrition estimates for this meal."
+            onOpenChange={(open) => {
+              setIsEditAnalysisOpen(open);
+              if (!open) {
+                setMealEditingAnalysis(null);
+              }
+            }}
+            open={isEditAnalysisOpen}
+            title="Edit analysis"
+          >
+            <EditAnalysisForm
+              key={editAnalysisSessionKey}
+              dateKey={meta?.date ?? date}
+              meal={mealEditingAnalysis}
+              onSuccess={() => {
+                setIsEditAnalysisOpen(false);
+                setMealEditingAnalysis(null);
+              }}
+            />
+          </AddMealDialog>
+        </>
       )}
+
+      <AlertDialog onOpenChange={handleDeleteDialogOpenChange} open={isDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete meal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {mealPendingDelete
+                ? `This will remove "${mealPendingDelete.dish_name}" from today's log.`
+                : "This will remove the selected meal from today's log."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMealMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction disabled={deleteMealMutation.isPending} onClick={handleDeleteMeal}>
+              {deleteMealMutation.isPending ? "Deleting..." : "Delete meal"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

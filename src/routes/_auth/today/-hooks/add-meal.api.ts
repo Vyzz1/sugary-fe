@@ -1,9 +1,11 @@
 import api from "@/lib/axios";
 import {
   buildCreateMealPayload,
+  buildUpdateMealPayload,
   buildUploadFileName,
   extractPublicUrl,
   type MealType,
+  type UpdateMealRequestPayload,
 } from "./add-meal.helpers";
 import type { BaseResponse } from "@/types/api";
 import type { RecentMealsResponse, TodayMeal } from "../-queries/today.query";
@@ -23,6 +25,20 @@ interface UploadImageResponse extends BaseResponse<{
 }
 
 interface CreateMealResponse extends BaseResponse<TodayMeal> {
+  request_id?: string;
+}
+
+interface DeleteMealResponse extends BaseResponse<{
+  id: number;
+}> {
+  request_id?: string;
+}
+
+interface UpdateMealResponse extends BaseResponse<TodayMeal> {
+  request_id?: string;
+}
+
+interface UpdateMealAnalysisResponse extends BaseResponse<TodayMeal["analysis"]> {
   request_id?: string;
 }
 
@@ -71,5 +87,31 @@ export async function getRecentMeals(params?: { q?: string }) {
     params,
   });
 
+  return response.data.data;
+}
+
+export async function deleteMeal(mealId: number) {
+  const response = await api.delete<DeleteMealResponse>(`/api/meals/${mealId}`);
+  return response.data.data;
+}
+
+export async function updateMeal(mealId: number, payload: UpdateMealRequestPayload) {
+  const response = await api.patch<UpdateMealResponse>(
+    `/api/meals/${mealId}`,
+    buildUpdateMealPayload(payload)
+  );
+  return response.data.data;
+}
+
+export async function updateMealAnalysis(
+  mealId: number,
+  payload: {
+    estimated_sugar_grams: number;
+    estimated_carbs_grams: number;
+    estimated_protein_grams: number;
+    estimated_calories: number;
+  }
+) {
+  const response = await api.patch<UpdateMealAnalysisResponse>(`/api/meals/${mealId}/analysis`, payload);
   return response.data.data;
 }

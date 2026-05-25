@@ -1,4 +1,22 @@
-import { AlertTriangle, CircleHelp, Drumstick, Flame, Sandwich, UtensilsCrossed } from "lucide-react";
+import {
+  AlertTriangle,
+  CircleHelp,
+  Drumstick,
+  Ellipsis,
+  Flame,
+  Pencil,
+  Sandwich,
+  SlidersHorizontal,
+  Trash2,
+  UtensilsCrossed,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { TodayMeal } from "../-queries/today.query";
 
 const mealTypeMeta = {
@@ -30,7 +48,19 @@ const riskClassNames = {
   high: "border-rose-200 bg-rose-50 text-rose-700",
 } as const;
 
-export function TodayMealCard({ meal }: { meal: TodayMeal }) {
+export function TodayMealCard({
+  meal,
+  isDeleting = false,
+  onEdit,
+  onEditAnalysis,
+  onDelete,
+}: {
+  meal: TodayMeal;
+  isDeleting?: boolean;
+  onEdit?: (meal: TodayMeal) => void;
+  onEditAnalysis?: (meal: TodayMeal) => void;
+  onDelete?: (meal: TodayMeal) => void;
+}) {
   const mealMeta = mealTypeMeta[meal.meal_type];
   const MealIcon = mealMeta.icon;
   const mealTime = formatMealTime(meal.recorded_at);
@@ -65,17 +95,95 @@ export function TodayMealCard({ meal }: { meal: TodayMeal }) {
               {meal.dish_name}
             </h3>
             <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              Analysis status: <span className="font-medium text-foreground">{meal.analysis_status}</span>
+              Analysis status:{" "}
+              <span className="font-medium text-foreground">{meal.analysis_status}</span>
             </p>
           </div>
         </div>
 
-        <span
-          className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[meal.analysis.risk_level]}`}
-        >
-          <AlertTriangle className="size-3.5" />
-          {meal.analysis.risk_level} risk
-        </span>
+        <div className="flex items-center gap-2 justify-between">
+          <span
+            className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[meal.analysis.risk_level]}`}
+          >
+            <AlertTriangle className="size-3.5" />
+            {meal.analysis.risk_level} risk
+          </span>
+          <div className="hidden items-center gap-2 sm:flex">
+            {onEdit ? (
+              <Button
+                aria-label={`Edit ${meal.dish_name}`}
+                onClick={() => onEdit(meal)}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+              >
+                <Pencil className="size-4 text-primary" />
+              </Button>
+            ) : null}
+            {onEditAnalysis ? (
+              <Button
+                aria-label={`Edit analysis for ${meal.dish_name}`}
+                onClick={() => onEditAnalysis(meal)}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+              >
+                <SlidersHorizontal className="size-4 text-primary" />
+              </Button>
+            ) : null}
+            {onDelete ? (
+              <Button
+                aria-label={`Delete ${meal.dish_name}`}
+                disabled={isDeleting}
+                onClick={() => onDelete(meal)}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+              >
+                <Trash2 className="size-4 text-destructive" />
+              </Button>
+            ) : null}
+          </div>
+          {onEdit || onEditAnalysis || onDelete ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label={`Meal actions for ${meal.dish_name}`}
+                  className="sm:hidden"
+                  size="icon-sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Ellipsis className="size-4 text-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="sm:hidden">
+                {onEdit ? (
+                  <DropdownMenuItem onClick={() => onEdit(meal)}>
+                    <Pencil className="size-4 text-primary" />
+                    Edit meal
+                  </DropdownMenuItem>
+                ) : null}
+                {onEditAnalysis ? (
+                  <DropdownMenuItem onClick={() => onEditAnalysis(meal)}>
+                    <SlidersHorizontal className="size-4 text-primary" />
+                    Edit analysis
+                  </DropdownMenuItem>
+                ) : null}
+                {onDelete ? (
+                  <DropdownMenuItem
+                    disabled={isDeleting}
+                    onClick={() => onDelete(meal)}
+                    variant="destructive"
+                  >
+                    <Trash2 className="size-4" />
+                    Delete meal
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-4">
@@ -91,7 +199,10 @@ export function TodayMealCard({ meal }: { meal: TodayMeal }) {
         </p>
         <ul className="space-y-1.5 sm:space-y-2">
           {meal.analysis.notes.map((note) => (
-            <li key={note} className="flex gap-2 text-sm leading-5 text-muted-foreground sm:leading-6">
+            <li
+              key={note}
+              className="flex gap-2 text-sm leading-5 text-muted-foreground sm:leading-6"
+            >
               <span className="mt-2 size-1.5 shrink-0 bg-primary" />
               <span>{note}</span>
             </li>
@@ -102,15 +213,7 @@ export function TodayMealCard({ meal }: { meal: TodayMeal }) {
   );
 }
 
-function MetricTile({
-  label,
-  value,
-  unit,
-}: {
-  label: string;
-  value: number;
-  unit: string;
-}) {
+function MetricTile({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
     <div className="border border-primary/10 bg-primary/4 px-3 py-2.5 sm:py-3">
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary/80 sm:text-xs sm:tracking-[0.16em]">

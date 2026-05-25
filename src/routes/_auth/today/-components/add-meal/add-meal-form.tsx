@@ -14,17 +14,21 @@ import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/error";
 import {
   buildCreateMealPayload,
+  buildUpdateMealPayload,
   inferDefaultMealType,
+  toDateTimeLocalValue,
   toOptionalIsoString,
   validateImageFile,
   type MealType,
 } from "../../-hooks/add-meal.helpers";
 import { useCreateMealMutation } from "../../-hooks/useCreateMealMutation";
+import { useUpdateMealMutation } from "../../-hooks/useUpdateMealMutation";
 import { useUploadMealImageMutation } from "../../-hooks/useUploadMealImageMutation";
 import { ImagePicker, type ImagePickerIntent } from "./image-picker";
 import { MealTypeSelect } from "./meal-type-select";
 import { RecentMealPicker } from "./recent-meal-picker";
 import { RecordedAtField } from "./recorded-at-field";
+import type { TodayMeal } from "../../-queries/today.query";
 
 type AddMealTab = "new" | "recent";
 
@@ -38,19 +42,26 @@ export function AddMealForm({
   dateKey,
   defaultIntent,
   defaultTab,
+  mode = "create",
+  initialMeal,
   onSuccess,
 }: {
   dateKey: string;
   defaultIntent: ImagePickerIntent;
   defaultTab: AddMealTab;
+  mode?: "create" | "edit";
+  initialMeal?: TodayMeal | null;
   onSuccess: () => void;
 }) {
   const [tab, setTab] = React.useState<AddMealTab>(defaultTab);
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = React.useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = React.useState<string | null>(
+    initialMeal?.image_url ?? null
+  );
   const [imageIntent, setImageIntent] = React.useState<ImagePickerIntent>(defaultIntent);
   const [imageAutoOpenKey, setImageAutoOpenKey] = React.useState(0);
-  const [selectedRecentMealId, setSelectedRecentMealId] = React.useState<number | null>(null);
+  const [selectedRecentMeal, setSelectedRecentMeal] = React.useState<TodayMeal | null>(null);
   const [recentError, setRecentError] = React.useState<string | null>(null);
   const [imageError, setImageError] = React.useState<string | null>(null);
   const [submitStage, setSubmitStage] = React.useState<"idle" | "uploading" | "saving">("idle");
@@ -58,9 +69,9 @@ export function AddMealForm({
 
   const form = useForm<AddMealFormValues>({
     defaultValues: {
-      dish_name: "",
-      meal_type: inferDefaultMealType(),
-      recorded_at: "",
+      dish_name: initialMeal?.dish_name ?? "",
+      meal_type: initialMeal?.meal_type ?? inferDefaultMealType(),
+      recorded_at: toDateTimeLocalValue(initialMeal?.recorded_at),
     },
   });
 
@@ -69,8 +80,15 @@ export function AddMealForm({
     resetState();
     onSuccess();
   });
+  const updateMealMutation = useUpdateMealMutation(() => {
+    onSuccess();
+  });
 
   React.useEffect(() => {
+    if (mode === "edit") {
+      return;
+    }
+
     if (!didSyncInitialDefaultsRef.current) {
       didSyncInitialDefaultsRef.current = true;
       return;
@@ -82,8 +100,28 @@ export function AddMealForm({
   }, [defaultIntent, defaultTab]);
 
   React.useEffect(() => {
+    if (mode !== "edit" || !initialMeal) {
+      return;
+    }
+
+    form.reset({
+      dish_name: initialMeal.dish_name,
+      meal_type: initialMeal.meal_type,
+      recorded_at: toDateTimeLocalValue(initialMeal.recorded_at),
+    });
+    setExistingImageUrl(initialMeal.image_url ?? null);
+    setImageFile(null);
+    setImagePreviewUrl(initialMeal.image_url ?? null);
+    setImageIntent("manual");
+    setImageError(null);
+    setRecentError(null);
+    setSubmitStage("idle");
+    setTab("new");
+  }, [form, initialMeal, mode]);
+
+  React.useEffect(() => {
     if (!imageFile) {
-      setImagePreviewUrl(null);
+      setImagePreviewUrl(existingImageUrl);
       return;
     }
 
@@ -91,7 +129,7 @@ export function AddMealForm({
     setImagePreviewUrl(nextPreviewUrl);
 
     return () => URL.revokeObjectURL(nextPreviewUrl);
-  }, [imageFile]);
+  }, [existingImageUrl, imageFile]);
 
   const resetState = () => {
     form.reset({
@@ -101,7 +139,8 @@ export function AddMealForm({
     });
     setImageFile(null);
     setImagePreviewUrl(null);
-    setSelectedRecentMealId(null);
+    setExistingImageUrl(null);
+    setSelectedRecentMeal(null);
     setImageError(null);
     setRecentError(null);
     setSubmitStage("idle");
@@ -135,20 +174,34 @@ export function AddMealForm({
         }
 
         setSubmitStage("saving");
-        await createMealMutation.mutateAsync({
-          ...buildCreateMealPayload({
-            dish_name: values.dish_name,
-            meal_type: values.meal_type,
-            recorded_at: toOptionalIsoString(values.recorded_at),
-            image_url: imageUrl,
-          }),
-          dateKey,
-        });
-        toast.success("Meal added successfully.");
+        if (mode === "edit" && initialMeal) {
+          await updateMealMutation.mutateAsync({
+            ...buildUpdateMealPayload({
+              dish_name: values.dish_name,
+              meal_type: values.meal_type,
+              recorded_at: toOptionalIsoString(values.recorded_at),
+              image_url: imageFile ? imageUrl : existingImageUrl,
+            }),
+            mealId: initialMeal.id,
+            dateKey,
+          });
+          toast.success("Meal updated successfully.");
+        } else {
+          await createMealMutation.mutateAsync({
+            ...buildCreateMealPayload({
+              dish_name: values.dish_name,
+              meal_type: values.meal_type,
+              recorded_at: toOptionalIsoString(values.recorded_at),
+              image_url: imageUrl,
+            }),
+            dateKey,
+          });
+          toast.success("Meal added successfully.");
+        }
         return;
       }
 
-      if (!selectedRecentMealId) {
+      if (!selectedRecentMeal) {
         setRecentError("Please select a recent meal.");
         return;
       }
@@ -158,7 +211,7 @@ export function AddMealForm({
         ...buildCreateMealPayload({
           meal_type: values.meal_type,
           recorded_at: toOptionalIsoString(values.recorded_at),
-          source_meal_id: selectedRecentMealId,
+          source_meal_id: selectedRecentMeal.id,
         }),
         dateKey,
       });
@@ -178,37 +231,41 @@ export function AddMealForm({
       ? "Uploading image..."
       : submitStage === "saving"
         ? "Saving meal..."
+        : mode === "edit"
+          ? "Save changes"
         : tab === "recent"
           ? "Add from recent"
           : "Save meal";
 
   return (
     <Form {...form}>
-      <form className="flex min-h-0 flex-col gap-5" onSubmit={form.handleSubmit(handleSubmit)}>
-        <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
-          <button
-            className={`rounded-lg px-3 py-2 text-sm font-medium ${
-              tab === "new" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-            onClick={() => setTab("new")}
-            type="button"
-          >
-            New meal
-          </button>
-          <button
-            className={`rounded-lg px-3 py-2 text-sm font-medium ${
-              tab === "recent" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
-            }`}
-            onClick={() => setTab("recent")}
-            type="button"
-          >
-            Recent
-          </button>
-        </div>
+      <form className="flex min-h-full flex-col gap-5" onSubmit={form.handleSubmit(handleSubmit)}>
+        {mode === "edit" ? null : (
+          <div className="inline-flex rounded-xl border border-border bg-muted/40 p-1">
+            <button
+              className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                tab === "new" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+              onClick={() => setTab("new")}
+              type="button"
+            >
+              New meal
+            </button>
+            <button
+              className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                tab === "recent" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+              onClick={() => setTab("recent")}
+              type="button"
+            >
+              Recent
+            </button>
+          </div>
+        )}
 
-        <div className="space-y-5">
+        <div className="flex min-h-[420px] flex-1 flex-col space-y-5 md:min-h-[360px]">
           {tab === "new" ? (
-            <div className="grid gap-5 md:grid-cols-[1fr_1fr]">
+            <div className="grid flex-1 gap-5 md:grid-cols-[1fr_1fr]">
               <div>
                 <ImagePicker
                   autoOpenKey={imageAutoOpenKey}
@@ -234,6 +291,7 @@ export function AddMealForm({
                   }}
                   onRemove={() => {
                     setImageFile(null);
+                    setExistingImageUrl(null);
                     setImagePreviewUrl(null);
                     setImageError(null);
                   }}
@@ -282,13 +340,13 @@ export function AddMealForm({
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-1 flex-col space-y-4">
               <RecentMealPicker
-                onSelectMeal={(mealId) => {
-                  setSelectedRecentMealId(mealId);
+                onSelectMeal={(meal) => {
+                  setSelectedRecentMeal(meal);
                   setRecentError(null);
                 }}
-                selectedMealId={selectedRecentMealId}
+                selectedMeal={selectedRecentMeal}
               />
 
               <FormField
@@ -327,7 +385,11 @@ export function AddMealForm({
         <div className="sticky bottom-0 -mx-4 border-t border-border bg-background px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:static md:mx-0 md:border-0 md:bg-transparent md:px-0 md:pt-0 md:pb-0">
           <Button
             className="w-full md:w-auto"
-            disabled={createMealMutation.isPending || uploadMealImageMutation.isPending}
+            disabled={
+              createMealMutation.isPending ||
+              updateMealMutation.isPending ||
+              uploadMealImageMutation.isPending
+            }
             type="submit"
           >
             {submitLabel}
