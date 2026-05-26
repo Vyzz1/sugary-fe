@@ -83,6 +83,7 @@ export function AddMealForm({
   const updateMealMutation = useUpdateMealMutation(() => {
     onSuccess();
   });
+  const watchedDishName = form.watch("dish_name");
 
   React.useEffect(() => {
     if (mode === "edit") {
@@ -236,6 +237,12 @@ export function AddMealForm({
         : tab === "recent"
           ? "Add from recent"
           : "Save meal";
+  const hasAnalysisRerunChange =
+    mode === "edit" &&
+    initialMeal &&
+    (watchedDishName.trim() !== initialMeal.dish_name ||
+      imageFile !== null ||
+      existingImageUrl !== (initialMeal.image_url ?? null));
 
   return (
     <Form {...form}>
@@ -313,6 +320,12 @@ export function AddMealForm({
                     </FormItem>
                   )}
                 />
+
+                {hasAnalysisRerunChange ? (
+                  <p className="rounded-xl border border-primary/15 bg-primary/6 px-3 py-2 text-sm font-medium leading-6 text-primary">
+                    Updating the dish name or meal image will trigger a fresh AI analysis.
+                  </p>
+                ) : null}
 
                 <FormField
                   control={form.control}

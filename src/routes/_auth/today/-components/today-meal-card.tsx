@@ -1,5 +1,6 @@
 import {
   AlertTriangle,
+  Bot,
   CircleHelp,
   Drumstick,
   Ellipsis,
@@ -86,6 +87,13 @@ export function TodayMealCard({
               {mealMeta.label}
             </span>
             <span className="text-xs text-muted-foreground sm:text-sm">{mealTime}</span>
+            <span
+              aria-label={`AI ${meal.analysis_status}`}
+              className="inline-flex items-center text-primary"
+              title={`AI ${meal.analysis_status}`}
+            >
+              <Bot className="size-3.5" />
+            </span>
             {meal.is_user_edited ? (
               <span className="text-xs font-semibold text-primary">Edited</span>
             ) : null}
@@ -94,10 +102,6 @@ export function TodayMealCard({
             <h3 className="max-w-3xl text-base font-semibold text-foreground sm:text-xl">
               {meal.dish_name}
             </h3>
-            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-              Analysis status:{" "}
-              <span className="font-medium text-foreground">{meal.analysis_status}</span>
-            </p>
           </div>
         </div>
 

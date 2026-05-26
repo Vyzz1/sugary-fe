@@ -60,11 +60,15 @@ export function validateImageFile(file: File) {
 }
 
 export function toOptionalIsoString(datetimeLocalValue?: string) {
-  if (!datetimeLocalValue) {
-    return undefined;
-  }
+  if (!datetimeLocalValue) return undefined;
 
-  return new Date(datetimeLocalValue).toISOString();
+  const [datePart, timePart] = datetimeLocalValue.split("T");
+  if (!datePart || !timePart) return undefined;
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  return new Date(year, month - 1, day, hour, minute, 0, 0).toISOString();
 }
 
 export function toDateTimeLocalValue(isoString?: string) {
