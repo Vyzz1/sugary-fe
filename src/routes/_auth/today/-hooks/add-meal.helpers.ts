@@ -1,6 +1,8 @@
+import imageCompression from "browser-image-compression";
 import type { TodayMeal } from "../-queries/today.query";
 
 export type MealType = TodayMeal["meal_type"];
+export const MAX_MEAL_IMAGE_SIZE_MB = 5;
 
 export interface CreateMealRequestPayload {
   dish_name?: string;
@@ -54,9 +56,23 @@ export function validateImageFile(file: File) {
     throw new Error("Please choose an image file.");
   }
 
-  if (file.size > 8 * 1024 * 1024) {
-    throw new Error("Image must be 8MB or smaller.");
+  if (file.size > MAX_MEAL_IMAGE_SIZE_MB * 1024 * 1024) {
+    throw new Error(`Image must be ${MAX_MEAL_IMAGE_SIZE_MB}MB or smaller.`);
   }
+}
+
+export async function compressMealImage(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Please choose an image file.");
+  }
+
+  return imageCompression(file, {
+    maxSizeMB: MAX_MEAL_IMAGE_SIZE_MB,
+    maxWidthOrHeight: 2000,
+    useWebWorker: true,
+    initialQuality: 0.85,
+    alwaysKeepResolution: false,
+  });
 }
 
 export function toOptionalIsoString(datetimeLocalValue?: string) {

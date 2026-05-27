@@ -15,7 +15,9 @@ import { getErrorMessage } from "@/lib/error";
 import {
   buildCreateMealPayload,
   buildUpdateMealPayload,
+  compressMealImage,
   inferDefaultMealType,
+  MAX_MEAL_IMAGE_SIZE_MB,
   toDateTimeLocalValue,
   toOptionalIsoString,
   validateImageFile,
@@ -279,7 +281,7 @@ export function AddMealForm({
                   errorMessage={imageError ?? undefined}
                   imageFile={imageFile}
                   imagePreviewUrl={imagePreviewUrl}
-                  onFileChange={(file) => {
+                  onFileChange={async (file) => {
                     try {
                       setImageError(null);
                       if (!file) {
@@ -287,10 +289,16 @@ export function AddMealForm({
                         return;
                       }
 
-                      validateImageFile(file);
-                      setImageFile(file);
+                      const compressedFile = await compressMealImage(file);
+                      validateImageFile(compressedFile);
+                      setImageFile(compressedFile);
                     } catch (error) {
-                      setImageError(getErrorMessage(error, "Please choose a valid image."));
+                      setImageError(
+                        getErrorMessage(
+                          error,
+                          `Please choose a valid image under ${MAX_MEAL_IMAGE_SIZE_MB}MB.`
+                        )
+                      );
                       setImageFile(null);
                     } finally {
                       setImageIntent("manual");

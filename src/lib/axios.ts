@@ -20,6 +20,8 @@ api.interceptors.request.use((config) => {
     return config;
   }
 
+  config.headers["X-Timezone"] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   const accessToken = getAccessToken();
 
   if (accessToken) {
