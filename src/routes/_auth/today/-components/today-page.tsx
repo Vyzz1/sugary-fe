@@ -17,10 +17,7 @@ import { AddMealDialog } from "./add-meal/add-meal-dialog";
 import { AddMealDrawer } from "./add-meal/add-meal-drawer";
 import { AddMealForm } from "./add-meal/add-meal-form";
 import { EditAnalysisForm } from "./edit-analysis-form";
-import {
-  AddMealTrigger,
-  type AddMealTriggerIntent,
-} from "./add-meal/add-meal-trigger";
+import { AddMealTrigger, type AddMealTriggerIntent } from "./add-meal/add-meal-trigger";
 import { useDeleteMealMutation } from "../-hooks/useDeleteMealMutation";
 import { useTodayMealsQuery } from "../-hooks/useTodayMealsQuery";
 import { TodayMealCard } from "./today-meal-card";
@@ -160,7 +157,11 @@ export function TodayPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-          <SummaryTile icon={Soup} label="Meals logged" value={String(meta?.count ?? meals.length)} />
+          <SummaryTile
+            icon={Soup}
+            label="Meals logged"
+            value={String(meta?.count ?? meals.length)}
+          />
           <SummaryTile
             icon={Flame}
             label="Total sugar"
@@ -185,7 +186,9 @@ export function TodayPage() {
             meals.map((meal) => (
               <TodayMealCard
                 key={meal.id}
-                isDeleting={deleteMealMutation.isPending && deleteMealMutation.variables === meal.id}
+                isDeleting={
+                  deleteMealMutation.isPending && deleteMealMutation.variables === meal.id
+                }
                 meal={meal}
                 onEdit={handleOpenEditMeal}
                 onEditAnalysis={handleOpenEditAnalysis}
@@ -229,7 +232,8 @@ export function TodayPage() {
                       >
                         <p className="text-sm font-semibold text-rose-700">{meal.dish_name}</p>
                         <p className="mt-1 text-sm text-rose-700/80">
-                          {meal.analysis.estimated_sugar_grams} g sugar, {meal.analysis.estimated_calories} kcal
+                          {meal.analysis.estimated_sugar_grams} g sugar,{" "}
+                          {meal.analysis.estimated_calories} kcal
                         </p>
                       </div>
                     ))
@@ -456,10 +460,18 @@ function TodayLoadingState() {
 }
 
 function buildTodaySummary(meals: TodayMeal[]) {
-  const totalSugar = meals.reduce((sum, meal) => sum + meal.analysis.estimated_sugar_grams, 0);
-  const totalCalories = meals.reduce((sum, meal) => sum + meal.analysis.estimated_calories, 0);
-  const highRiskMeals = meals.filter((meal) => meal.analysis.risk_level === "high");
-  const topNotes = highRiskMeals.flatMap((meal) => meal.analysis.notes).slice(0, 4);
+  const analyzedMeals = meals.filter((meal) => meal.analysis_status === "completed");
+
+  const totalSugar = analyzedMeals.reduce(
+    (sum, meal) => sum + (meal.analysis.estimated_sugar_grams || 0),
+    0
+  );
+  const totalCalories = analyzedMeals.reduce(
+    (sum, meal) => sum + (meal.analysis.estimated_calories || 0),
+    0
+  );
+  const highRiskMeals = analyzedMeals.filter((meal) => meal.analysis.risk_level === "high");
+  const topNotes = highRiskMeals.flatMap((meal) => meal.analysis.notes.length || []).slice(0, 4);
 
   return {
     totalSugar,

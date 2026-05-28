@@ -8,7 +8,6 @@ export type ImagePickerIntent = "camera" | "library" | "upload" | "manual";
 const consumedAutoOpenKeys = new Set<number>();
 
 export function ImagePicker({
-  imageFile,
   imagePreviewUrl,
   onFileChange,
   onRemove,
@@ -46,19 +45,18 @@ export function ImagePicker({
     }
   }, [autoOpenKey, preferredIntent]);
 
-  const handlePick =
-    () => (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (!file) {
-        return;
-      }
+  const handlePick = () => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
 
-      try {
-        onFileChange(file);
-      } finally {
-        event.target.value = "";
-      }
-    };
+    try {
+      onFileChange(file);
+    } finally {
+      event.target.value = "";
+    }
+  };
 
   return (
     <div className="space-y-3">

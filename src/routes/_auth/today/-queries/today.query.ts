@@ -31,10 +31,10 @@ export interface TodayMealAnalysis {
 export interface TodayMeal {
   id: number;
   dish_name: string;
-  meal_type: "breakfast" | "lunch" | "dinner" | "snack" | "unspecified";
+  meal_type: "breakfast" | "lunch" | "dinner" | "snack" | "drink" | "unspecified";
   image_url?: string;
   recorded_at: string;
-  analysis_status: "pending" | "completed" | "failed";
+  analysis_status: "pending" | "processing" | "completed" | "failed";
   is_user_edited: boolean;
   analysis: TodayMealAnalysis;
 }

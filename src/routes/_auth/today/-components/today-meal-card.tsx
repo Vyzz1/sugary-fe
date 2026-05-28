@@ -5,11 +5,13 @@ import {
   Drumstick,
   Ellipsis,
   Flame,
+  Loader2,
   Pencil,
   Sandwich,
   SlidersHorizontal,
   Trash2,
   UtensilsCrossed,
+  GlassWater,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +43,10 @@ const mealTypeMeta = {
     label: "Unspecified",
     icon: CircleHelp,
   },
+  drink: {
+    label: "Drink",
+    icon: GlassWater,
+  },
 } as const;
 
 const riskClassNames = {
@@ -65,6 +71,7 @@ export function TodayMealCard({
   const mealMeta = mealTypeMeta[meal.meal_type];
   const MealIcon = mealMeta.icon;
   const mealTime = formatMealTime(meal.recorded_at);
+  const isAnalyzing = meal.analysis_status === "pending" || meal.analysis_status === "processing";
 
   return (
     <article className="border border-primary/10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_3%,white),white_18%)] p-3.5 sm:p-5">
@@ -89,7 +96,7 @@ export function TodayMealCard({
             <span className="text-xs text-muted-foreground sm:text-sm">{mealTime}</span>
             <span
               aria-label={`AI ${meal.analysis_status}`}
-              className="inline-flex items-center text-primary"
+              className={`inline-flex items-center text-primary ${isAnalyzing ? "animate-pulse" : ""}`}
               title={`AI ${meal.analysis_status}`}
             >
               <Bot className="size-3.5" />
@@ -106,12 +113,24 @@ export function TodayMealCard({
         </div>
 
         <div className="flex items-center gap-2 justify-between">
-          <span
-            className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[meal.analysis.risk_level]}`}
-          >
-            <AlertTriangle className="size-3.5" />
-            {meal.analysis.risk_level} risk
-          </span>
+          {isAnalyzing ? (
+            <span className="inline-flex w-fit items-center gap-2 border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary sm:text-xs sm:tracking-[0.14em]">
+              <Loader2 className="size-3.5 animate-spin" />
+              Analyzing
+            </span>
+          ) : meal.analysis_status === "failed" ? (
+            <span className="inline-flex w-fit items-center gap-2 border border-destructive/20 bg-destructive/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-destructive sm:text-xs sm:tracking-[0.14em]">
+              <AlertTriangle className="size-3.5" />
+              Failed
+            </span>
+          ) : (
+            <span
+              className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[meal.analysis.risk_level]}`}
+            >
+              <AlertTriangle className="size-3.5" />
+              {meal.analysis.risk_level} risk
+            </span>
+          )}
           <div className="hidden items-center gap-2 sm:flex">
             {onEdit ? (
               <Button
@@ -190,29 +209,45 @@ export function TodayMealCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:gap-3 sm:grid-cols-4">
-        <MetricTile label="Sugar" unit="g" value={meal.analysis.estimated_sugar_grams} />
-        <MetricTile label="Carbs" unit="g" value={meal.analysis.estimated_carbs_grams} />
-        <MetricTile label="Protein" unit="g" value={meal.analysis.estimated_protein_grams} />
-        <MetricTile label="Calories" unit="kcal" value={meal.analysis.estimated_calories} />
-      </div>
+      {isAnalyzing ? (
+        <div className="mt-4 flex animate-pulse flex-col items-center justify-center border border-primary/10 bg-primary/4 p-8 sm:mt-5">
+          <Bot className="mb-3 size-8 text-primary/40" />
+          <p className="text-sm font-semibold text-primary/60">Our AI is analyzing your meal...</p>
+          <p className="mt-1 text-xs text-primary/40">This usually takes a few seconds.</p>
+        </div>
+      ) : meal.analysis_status === "failed" ? (
+        <div className="mt-4 border border-destructive/10 bg-destructive/5 p-4 sm:mt-5">
+          <p className="text-sm font-medium text-destructive">
+            Failed to analyze this meal. Please try editing it.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-3">
+            <MetricTile label="Sugar" unit="g" value={meal.analysis.estimated_sugar_grams} />
+            <MetricTile label="Carbs" unit="g" value={meal.analysis.estimated_carbs_grams} />
+            <MetricTile label="Protein" unit="g" value={meal.analysis.estimated_protein_grams} />
+            <MetricTile label="Calories" unit="kcal" value={meal.analysis.estimated_calories} />
+          </div>
 
-      <div className="mt-4 space-y-2 sm:mt-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          Notes
-        </p>
-        <ul className="space-y-1.5 sm:space-y-2">
-          {meal.analysis.notes.map((note) => (
-            <li
-              key={note}
-              className="flex gap-2 text-sm leading-5 text-muted-foreground sm:leading-6"
-            >
-              <span className="mt-2 size-1.5 shrink-0 bg-primary" />
-              <span>{note}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <div className="mt-4 space-y-2 sm:mt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Notes
+            </p>
+            <ul className="space-y-1.5 sm:space-y-2">
+              {meal.analysis.notes.map((note) => (
+                <li
+                  key={note}
+                  className="flex gap-2 text-sm leading-5 text-muted-foreground sm:leading-6"
+                >
+                  <span className="mt-2 size-1.5 shrink-0 bg-primary" />
+                  <span>{note}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
     </article>
   );
 }
