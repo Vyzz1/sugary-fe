@@ -67,12 +67,12 @@ export function RecentMealPicker({
 
       {isMobile ? (
         <Drawer onOpenChange={setIsPickerOpen} open={isPickerOpen} repositionInputs={false}>
-          <DrawerContent className="max-h-[92vh]">
+          <DrawerContent className="max-h-[calc(100dvh-4rem)]">
             <DrawerHeader>
               <DrawerTitle>Select recent meal</DrawerTitle>
               <DrawerDescription>Search and reuse a meal you logged before.</DrawerDescription>
             </DrawerHeader>
-            <div className="h-[60vh] flex-1 overflow-y-auto px-4 pb-6">
+            <div className="h-full flex-1 overflow-y-auto px-4 pb-6">
               <RecentMealPickerPanel
                 meals={meals}
                 onClearQuery={() => setQuery("")}
@@ -148,7 +148,7 @@ function RecentMealPickerPanel({
   const hasQuery = Boolean(query.trim());
 
   return (
-    <div className="flex h-[calc(60vh-5rem)] flex-col space-y-4 md:h-[440px]">
+    <div className="flex h-full flex-col space-y-4 md:h-[440px]">
       <label className="space-y-2">
         <span className="text-sm font-semibold text-foreground">Search recent meals</span>
         <div className="relative">

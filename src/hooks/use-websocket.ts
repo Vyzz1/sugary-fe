@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { getAccessToken } from "@/lib/auth-token";
 import { useQueryClient } from "@tanstack/react-query";
 import { todayKeys } from "@/routes/_auth/today/-queries/today.query";
+import { reportKeys } from "@/routes/_auth/reports/-queries/report.query";
 
 export function useWebSocket() {
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -38,6 +39,8 @@ export function useWebSocket() {
           const parsed = JSON.parse(event.data);
           if (parsed.type === "meal_analysis" && parsed.status === "completed") {
             queryClient.invalidateQueries({ queryKey: todayKeys.all });
+          } else if (parsed.type === "daily_report" && parsed.status === "completed") {
+            queryClient.invalidateQueries({ queryKey: reportKeys.all });
           }
         } catch (err) {
           // Handle parsing error if needed
