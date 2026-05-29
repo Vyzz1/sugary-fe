@@ -55,6 +55,15 @@ const riskClassNames = {
   high: "border-rose-200 bg-rose-50 text-rose-700",
 } as const;
 
+const emptyAnalysis = {
+  estimated_sugar_grams: 0,
+  estimated_carbs_grams: 0,
+  estimated_protein_grams: 0,
+  estimated_calories: 0,
+  risk_level: "low" as const,
+  notes: [],
+};
+
 export function TodayMealCard({
   meal,
   isDeleting = false,
@@ -72,6 +81,7 @@ export function TodayMealCard({
   const MealIcon = mealMeta.icon;
   const mealTime = formatMealTime(meal.recorded_at);
   const isAnalyzing = meal.analysis_status === "pending" || meal.analysis_status === "processing";
+  const analysis = meal.analysis ?? emptyAnalysis;
 
   return (
     <article className="border border-primary/10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_3%,white),white_18%)] p-3.5 sm:p-5">
@@ -125,10 +135,10 @@ export function TodayMealCard({
             </span>
           ) : (
             <span
-              className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[meal.analysis.risk_level]}`}
+              className={`inline-flex w-fit items-center gap-2 border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em] ${riskClassNames[analysis.risk_level]}`}
             >
               <AlertTriangle className="size-3.5" />
-              {meal.analysis.risk_level} risk
+              {analysis.risk_level} risk
             </span>
           )}
           <div className="hidden items-center gap-2 sm:flex">
@@ -218,16 +228,16 @@ export function TodayMealCard({
       ) : meal.analysis_status === "failed" ? (
         <div className="mt-4 border border-destructive/10 bg-destructive/5 p-4 sm:mt-5">
           <p className="text-sm font-medium text-destructive">
-            Failed to analyze this meal. Please try editing it.
+            Failed to analyze this meal. Will retry automatically in a few minutes.
           </p>
         </div>
       ) : (
         <>
           <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:grid-cols-4 sm:gap-3">
-            <MetricTile label="Sugar" unit="g" value={meal.analysis.estimated_sugar_grams} />
-            <MetricTile label="Carbs" unit="g" value={meal.analysis.estimated_carbs_grams} />
-            <MetricTile label="Protein" unit="g" value={meal.analysis.estimated_protein_grams} />
-            <MetricTile label="Calories" unit="kcal" value={meal.analysis.estimated_calories} />
+            <MetricTile label="Sugar" unit="g" value={analysis.estimated_sugar_grams} />
+            <MetricTile label="Carbs" unit="g" value={analysis.estimated_carbs_grams} />
+            <MetricTile label="Protein" unit="g" value={analysis.estimated_protein_grams} />
+            <MetricTile label="Calories" unit="kcal" value={analysis.estimated_calories} />
           </div>
 
           <div className="mt-4 space-y-2 sm:mt-5">
@@ -235,7 +245,7 @@ export function TodayMealCard({
               Notes
             </p>
             <ul className="space-y-1.5 sm:space-y-2">
-              {meal.analysis.notes.map((note) => (
+              {analysis.notes.map((note) => (
                 <li
                   key={note}
                   className="flex gap-2 text-sm leading-5 text-muted-foreground sm:leading-6"

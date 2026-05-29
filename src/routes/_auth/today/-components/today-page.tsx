@@ -21,7 +21,7 @@ import { AddMealTrigger, type AddMealTriggerIntent } from "./add-meal/add-meal-t
 import { useDeleteMealMutation } from "../-hooks/useDeleteMealMutation";
 import { useTodayMealsQuery } from "../-hooks/useTodayMealsQuery";
 import { TodayMealCard } from "./today-meal-card";
-import type { TodayMeal } from "../-queries/today.query";
+import type { TodayMeal, TodayMealAnalysis } from "../-queries/today.query";
 import type { ImagePickerIntent } from "./add-meal/image-picker";
 
 export function TodayPage() {
@@ -460,18 +460,18 @@ function TodayLoadingState() {
 }
 
 function buildTodaySummary(meals: TodayMeal[]) {
-  const analyzedMeals = meals.filter((meal) => meal.analysis_status === "completed");
+  const analyzedMeals = meals.filter(isAnalyzedMeal);
 
   const totalSugar = analyzedMeals.reduce(
-    (sum, meal) => sum + (meal.analysis.estimated_sugar_grams || 0),
+    (sum, meal) => sum + meal.analysis.estimated_sugar_grams,
     0
   );
   const totalCalories = analyzedMeals.reduce(
-    (sum, meal) => sum + (meal.analysis.estimated_calories || 0),
+    (sum, meal) => sum + meal.analysis.estimated_calories,
     0
   );
   const highRiskMeals = analyzedMeals.filter((meal) => meal.analysis.risk_level === "high");
-  const topNotes = highRiskMeals.flatMap((meal) => meal.analysis.notes.length || []).slice(0, 4);
+  const topNotes = highRiskMeals.flatMap((meal) => meal.analysis.notes).slice(0, 4);
 
   return {
     totalSugar,
@@ -480,6 +480,10 @@ function buildTodaySummary(meals: TodayMeal[]) {
     highRiskMeals,
     topNotes,
   };
+}
+
+function isAnalyzedMeal(meal: TodayMeal): meal is TodayMeal & { analysis: TodayMealAnalysis } {
+  return meal.analysis_status === "completed" && Boolean(meal.analysis);
 }
 
 function getLocalDateString() {

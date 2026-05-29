@@ -37,7 +37,7 @@ export function useWebSocket() {
         console.log("WebSocket message:", event.data);
         try {
           const parsed = JSON.parse(event.data);
-          if (parsed.type === "meal_analysis" && parsed.status === "completed") {
+          if (parsed.type === "meal_analysis") {
             queryClient.invalidateQueries({ queryKey: todayKeys.all });
           } else if (parsed.type === "daily_report" && parsed.status === "completed") {
             queryClient.invalidateQueries({ queryKey: reportKeys.all });

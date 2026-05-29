@@ -15,6 +15,15 @@ interface EditAnalysisFormValues {
   estimated_calories: number;
 }
 
+function getAnalysisFormValues(meal: TodayMeal | null): EditAnalysisFormValues {
+  return {
+    estimated_sugar_grams: meal?.analysis?.estimated_sugar_grams ?? 0,
+    estimated_carbs_grams: meal?.analysis?.estimated_carbs_grams ?? 0,
+    estimated_protein_grams: meal?.analysis?.estimated_protein_grams ?? 0,
+    estimated_calories: meal?.analysis?.estimated_calories ?? 0,
+  };
+}
+
 export function EditAnalysisForm({
   dateKey,
   meal,
@@ -25,12 +34,7 @@ export function EditAnalysisForm({
   onSuccess: () => void;
 }) {
   const form = useForm<EditAnalysisFormValues>({
-    defaultValues: {
-      estimated_sugar_grams: meal?.analysis.estimated_sugar_grams ?? 0,
-      estimated_carbs_grams: meal?.analysis.estimated_carbs_grams ?? 0,
-      estimated_protein_grams: meal?.analysis.estimated_protein_grams ?? 0,
-      estimated_calories: meal?.analysis.estimated_calories ?? 0,
-    },
+    defaultValues: getAnalysisFormValues(meal),
   });
 
   const updateMealAnalysisMutation = useUpdateMealAnalysisMutation(onSuccess);
@@ -40,12 +44,7 @@ export function EditAnalysisForm({
       return;
     }
 
-    form.reset({
-      estimated_sugar_grams: meal.analysis.estimated_sugar_grams,
-      estimated_carbs_grams: meal.analysis.estimated_carbs_grams,
-      estimated_protein_grams: meal.analysis.estimated_protein_grams,
-      estimated_calories: meal.analysis.estimated_calories,
-    });
+    form.reset(getAnalysisFormValues(meal));
   }, [form, meal]);
 
   const handleSubmit = async (values: EditAnalysisFormValues) => {
