@@ -1,6 +1,7 @@
 import { AlertTriangle, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  formatSugarValue,
   formatReportDate,
   formatRiskLevel,
   getRiskBadgeClass,
@@ -19,7 +20,7 @@ export function DailyReportHero({ report }: { report: DailyReportData }) {
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              {report.total_sugar_grams} g sugar
+              {formatSugarValue(report.total_sugar_grams)} g sugar
             </h2>
             <span
               className={cn(

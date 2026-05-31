@@ -7,7 +7,7 @@ import {
 } from "../-queries/today.query";
 
 function toTodayMealsApiParams(date: string) {
-  return { date };
+  return { date, limit: 20 };
 }
 
 export function useTodayMealsQuery(date: string) {

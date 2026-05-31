@@ -30,6 +30,13 @@ export function formatRiskLevel(risk: string) {
   return `${risk.charAt(0).toUpperCase()}${risk.slice(1)} risk`;
 }
 
+export function formatSugarValue(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+  }).format(value);
+}
+
 export function getRiskBadgeClass(risk: ReportRiskLevel) {
   if (risk === "high") {
     return "border-destructive/20 bg-destructive/8 text-destructive";

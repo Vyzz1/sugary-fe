@@ -47,7 +47,7 @@ export function TodayPage() {
   const isMobile = useIsMobile();
   const date = getLocalDateString();
   const todayMealsQuery = useTodayMealsQuery(date);
-  const deleteMealMutation = useDeleteMealMutation(date);
+  const deleteMealMutation = useDeleteMealMutation();
 
   if (todayMealsQuery.isLoading) {
     return <TodayLoadingState />;
@@ -91,7 +91,7 @@ export function TodayPage() {
     }
 
     try {
-      await deleteMealMutation.mutateAsync(mealPendingDelete.id);
+      await deleteMealMutation.mutateAsync({ mealId: mealPendingDelete.id, dateKey: date });
       toast.success("Meal deleted successfully.");
       setIsDeleteDialogOpen(false);
       setMealPendingDelete(null);
@@ -187,7 +187,7 @@ export function TodayPage() {
               <TodayMealCard
                 key={meal.id}
                 isDeleting={
-                  deleteMealMutation.isPending && deleteMealMutation.variables === meal.id
+                  deleteMealMutation.isPending && deleteMealMutation.variables.mealId === meal.id
                 }
                 meal={meal}
                 onEdit={handleOpenEditMeal}
@@ -245,20 +245,6 @@ export function TodayPage() {
                 </div>
               </div>
             ) : null}
-          </section>
-
-          <section className="border border-border bg-card p-4 sm:p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Guidance
-            </p>
-            <ul className="mt-3 space-y-2.5 sm:mt-4 sm:space-y-3">
-              {summary.topNotes.map((note) => (
-                <li key={note} className="flex gap-2 text-sm leading-6 text-muted-foreground">
-                  <span className="mt-2 size-1.5 shrink-0 bg-primary" />
-                  <span>{note}</span>
-                </li>
-              ))}
-            </ul>
           </section>
         </aside>
       </section>

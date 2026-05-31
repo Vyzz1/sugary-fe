@@ -1,8 +1,5 @@
 import { Activity, AlertTriangle, Flame, Soup } from "lucide-react";
-import {
-  formatRiskLevel,
-  getRiskBadgeClass,
-} from "../-hooks/report.helpers";
+import { formatRiskLevel, formatSugarValue, getRiskBadgeClass } from "../-hooks/report.helpers";
 import { cn } from "@/lib/utils";
 import type { DailyReportData } from "../-queries/report.query";
 
@@ -10,8 +7,8 @@ export function ReportStatsGrid({ report }: { report: DailyReportData }) {
   return (
     <section className="grid grid-cols-2 gap-2.5 sm:gap-3">
       <StatsCard icon={Soup} label="Meals logged" value={String(report.meal_count)} />
-      <StatsCard icon={Flame} label="Total sugar" value={`${report.total_sugar_grams} g`} />
-      <StatsCard icon={Activity} label="Average sugar" value={`${report.average_sugar_grams} g`} />
+      <StatsCard icon={Flame} label="Total sugar" value={`${formatSugarValue(report.total_sugar_grams)} g`} />
+      <StatsCard icon={Activity} label="Average sugar" value={`${formatSugarValue(report.average_sugar_grams)} g`} />
       <StatsRiskCard risk={report.highest_risk_level} />
     </section>
   );
@@ -32,7 +29,9 @@ function StatsCard({
         <Icon className="size-4 text-primary" />
         <span className="min-w-0 break-words">{label}</span>
       </div>
-      <p className="mt-2 text-base font-semibold text-foreground sm:mt-3 sm:text-xl">{value}</p>
+      <p className="mt-2 break-words text-base font-semibold text-foreground sm:mt-3 sm:text-xl">
+        {value}
+      </p>
     </div>
   );
 }

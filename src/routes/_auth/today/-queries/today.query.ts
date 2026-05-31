@@ -36,6 +36,7 @@ export interface TodayMeal {
   recorded_at: string;
   analysis_status: "pending" | "processing" | "completed" | "failed";
   is_user_edited: boolean;
+  analysis_retry_count?: number;
   analysis?: TodayMealAnalysis | null;
 }
 
