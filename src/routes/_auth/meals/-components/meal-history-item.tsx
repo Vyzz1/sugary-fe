@@ -82,7 +82,7 @@ export function MealHistoryItem({
   const firstNote = meal.analysis?.notes[0];
   const [isNotesOpen, setIsNotesOpen] = React.useState(false);
   const hasMoreNotes = (meal.analysis?.notes.length ?? 0) > 1;
-  const remainingNotes = hasMoreNotes ? meal.analysis?.notes.slice(1) ?? [] : [];
+  const remainingNotes = hasMoreNotes ? (meal.analysis?.notes.slice(1) ?? []) : [];
   const statusDotClassName = isAnalyzing
     ? "bg-sky-500 animate-pulse"
     : meal.analysis_status === "failed"

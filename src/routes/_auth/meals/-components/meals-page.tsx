@@ -27,17 +27,22 @@ import { MealsDesktopFilterBar } from "./meals-desktop-filter-bar";
 import { MealsFilterDrawer } from "./meals-filter-drawer";
 import { MealHistoryItem } from "./meal-history-item";
 import { MealsMobileFilterBar } from "./meals-mobile-filter-bar";
+import { MealsSortDrawer } from "./meals-sort-drawer";
 import { MealsSummaryGrid } from "./meals-summary-grid";
 import {
   buildMealsSummary,
+  fromMealsSortOptionValue,
+  formatMealsSortLabel,
   formatHistoryRangeLabel,
   formatHistorySectionDate,
   getDefaultMealsFilterValues,
   groupMealsByDay,
   hasMealsFiltersApplied,
   normalizeMealsFilters,
+  toMealsSortOptionValue,
   toMealDateKey,
   type MealsFilterValues,
+  type MealsSortOptionValue,
 } from "../-hooks/meals.helpers";
 import { useMealsInfiniteQuery } from "../-hooks/useMealsInfiniteQuery";
 
@@ -47,6 +52,7 @@ export function MealsPage() {
   const [mobileDrawerFilters, setMobileDrawerFilters] =
     useState<MealsFilterValues>(getDefaultMealsFilterValues);
   const [isMobileFilterDrawerOpen, setIsMobileFilterDrawerOpen] = useState(false);
+  const [isMobileSortDrawerOpen, setIsMobileSortDrawerOpen] = useState(false);
   const [isAddMealOpen, setIsAddMealOpen] = useState(false);
   const [isEditMealOpen, setIsEditMealOpen] = useState(false);
   const [isEditAnalysisOpen, setIsEditAnalysisOpen] = useState(false);
@@ -76,6 +82,8 @@ export function MealsPage() {
   const deletingMealId = deleteMealMutation.isPending ? deleteMealMutation.variables.mealId : null;
   const appliedFilters = hasMealsFiltersApplied(filters);
   const rangeLabel = formatHistoryRangeLabel(filters.start_date, filters.end_date);
+  const sortLabel = formatMealsSortLabel(filters);
+  const selectedSortValue = toMealsSortOptionValue(filters);
 
   useEffect(() => {
     if (!mealsQuery.hasNextPage || mealsQuery.isFetchingNextPage) {
@@ -119,6 +127,13 @@ export function MealsPage() {
   const handleOpenMobileFilters = () => {
     setMobileDrawerFilters(filters);
     setIsMobileFilterDrawerOpen(true);
+  };
+
+  const handleMobileSortSelect = (value: MealsSortOptionValue) => {
+    const nextSort = fromMealsSortOptionValue(value);
+    setFilters((current) => ({ ...current, ...nextSort }));
+    setMobileDrawerFilters((current) => ({ ...current, ...nextSort }));
+    setIsMobileSortDrawerOpen(false);
   };
 
   const handleApplyMobileFilters = () => {
@@ -183,12 +198,14 @@ export function MealsPage() {
         mealsFound={latestMeta?.total ?? allMeals.length}
         onAddMeal={() => openAddMeal("camera")}
         onOpenFilters={handleOpenMobileFilters}
+        onOpenSort={() => setIsMobileSortDrawerOpen(true)}
         onSearchChange={(value) => {
           setFilters((current) => ({ ...current, q: value }));
           setMobileDrawerFilters((current) => ({ ...current, q: value }));
         }}
         rangeLabel={rangeLabel}
         search={filters.q}
+        sortLabel={sortLabel}
         totalSugar={mealsSummary.totalSugar}
       />
 
@@ -214,8 +231,12 @@ export function MealsPage() {
         onEndDateChange={(value) => setFilters((current) => ({ ...current, end_date: value }))}
         onMealTypeChange={(value) => setFilters((current) => ({ ...current, meal_type: value }))}
         onSearchChange={(value) => setFilters((current) => ({ ...current, q: value }))}
+        onSortChange={(value) =>
+          setFilters((current) => ({ ...current, ...fromMealsSortOptionValue(value) }))
+        }
         onStartDateChange={(value) => setFilters((current) => ({ ...current, start_date: value }))}
         search={filters.q}
+        sortValue={selectedSortValue}
         startDate={filters.start_date}
       />
 
@@ -322,6 +343,12 @@ export function MealsPage() {
         }
         open={isMobileFilterDrawerOpen}
         startDate={mobileDrawerFilters.start_date}
+      />
+      <MealsSortDrawer
+        onOpenChange={setIsMobileSortDrawerOpen}
+        onSelect={handleMobileSortSelect}
+        open={isMobileSortDrawerOpen}
+        selectedValue={selectedSortValue}
       />
 
       {isMobile ? (

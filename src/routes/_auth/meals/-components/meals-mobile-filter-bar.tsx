@@ -1,4 +1,4 @@
-import { Filter, Plus, Search } from "lucide-react";
+import { ArrowDownUp, Filter, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MealsSummaryCompact } from "./meals-summary-compact";
@@ -8,18 +8,22 @@ export function MealsMobileFilterBar({
   mealsFound,
   onAddMeal,
   onOpenFilters,
+  onOpenSort,
   onSearchChange,
   rangeLabel,
   search,
+  sortLabel,
   totalSugar,
 }: {
   highRiskCount: number;
   mealsFound: number;
   onAddMeal: () => void;
   onOpenFilters: () => void;
+  onOpenSort: () => void;
   onSearchChange: (value: string) => void;
   rangeLabel: string;
   search: string;
+  sortLabel: string;
   totalSugar: number;
 }) {
   return (
@@ -40,10 +44,24 @@ export function MealsMobileFilterBar({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Button className="h-9 rounded-xl px-3 text-sm" onClick={onOpenFilters} type="button" variant="outline">
+      <div className="grid grid-cols-3 gap-2">
+        <Button
+          className="h-9 rounded-xl px-3 text-sm"
+          onClick={onOpenFilters}
+          type="button"
+          variant="outline"
+        >
           <Filter className="size-4" />
           Filters
+        </Button>
+        <Button
+          className="h-9 rounded-xl px-3 text-sm"
+          onClick={onOpenSort}
+          type="button"
+          variant="outline"
+        >
+          <ArrowDownUp className="size-4" />
+          Sort
         </Button>
         <Button className="h-9 rounded-xl px-3 text-sm" onClick={onAddMeal} type="button">
           <Plus className="size-4" />
@@ -54,7 +72,7 @@ export function MealsMobileFilterBar({
       <MealsSummaryCompact
         highRiskCount={highRiskCount}
         mealsFound={mealsFound}
-        rangeLabel={rangeLabel}
+        rangeLabel={`${rangeLabel} · ${sortLabel}`}
         totalSugar={totalSugar}
       />
     </section>

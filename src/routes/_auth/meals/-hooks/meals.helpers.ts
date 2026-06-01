@@ -6,7 +6,75 @@ export interface MealsFilterValues {
   end_date: string;
   q: string;
   meal_type: TodayMeal["meal_type"] | "all";
+  sort_by:
+    | "recorded_at"
+    | "dish_name"
+    | "meal_type"
+    | "estimated_sugar_grams"
+    | "estimated_calories";
+  sort_type: "desc" | "asc";
 }
+
+export const mealsSortOptions = [
+  {
+    value: "recorded_at_desc",
+    label: "Newest first",
+    group: "Time",
+    sort_by: "recorded_at",
+    sort_type: "desc",
+  },
+  {
+    value: "recorded_at_asc",
+    label: "Oldest first",
+    group: "Time",
+    sort_by: "recorded_at",
+    sort_type: "asc",
+  },
+  {
+    value: "dish_name_asc",
+    label: "Name A-Z",
+    group: "Name",
+    sort_by: "dish_name",
+    sort_type: "asc",
+  },
+  {
+    value: "dish_name_desc",
+    label: "Name Z-A",
+    group: "Name",
+    sort_by: "dish_name",
+    sort_type: "desc",
+  },
+  {
+    value: "estimated_sugar_grams_desc",
+    label: "Highest sugar",
+    group: "Nutrition",
+    sort_by: "estimated_sugar_grams",
+    sort_type: "desc",
+  },
+  {
+    value: "estimated_sugar_grams_asc",
+    label: "Lowest sugar",
+    group: "Nutrition",
+    sort_by: "estimated_sugar_grams",
+    sort_type: "asc",
+  },
+  {
+    value: "estimated_calories_desc",
+    label: "Highest calories",
+    group: "Nutrition",
+    sort_by: "estimated_calories",
+    sort_type: "desc",
+  },
+  {
+    value: "estimated_calories_asc",
+    label: "Lowest calories",
+    group: "Nutrition",
+    sort_by: "estimated_calories",
+    sort_type: "asc",
+  },
+] as const;
+
+export type MealsSortOptionValue = (typeof mealsSortOptions)[number]["value"];
 
 export function getLocalDateString() {
   const now = new Date();
@@ -27,6 +95,8 @@ export function getDefaultMealsFilterValues(): MealsFilterValues {
     end_date: getLocalDateString(),
     q: "",
     meal_type: "all",
+    sort_by: "recorded_at",
+    sort_type: "desc",
   };
 }
 
@@ -36,8 +106,8 @@ export function normalizeMealsFilters(filters: MealsFilterValues): MealsHistoryQ
     end_date: filters.end_date,
     q: filters.q.trim() || undefined,
     meal_type: filters.meal_type === "all" ? undefined : filters.meal_type,
-    sort_by: "recorded_at",
-    sort_type: "desc",
+    sort_by: filters.sort_by,
+    sort_type: filters.sort_type,
   };
 }
 
@@ -89,9 +159,36 @@ export function hasMealsFiltersApplied(filters: MealsFilterValues) {
   return (
     filters.q.trim().length > 0 ||
     filters.meal_type !== "all" ||
+    filters.sort_by !== defaults.sort_by ||
+    filters.sort_type !== defaults.sort_type ||
     filters.start_date !== defaults.start_date ||
     filters.end_date !== defaults.end_date
   );
+}
+
+export function formatMealsSortLabel(filters: Pick<MealsFilterValues, "sort_by" | "sort_type">) {
+  return getMealsSortOption(filters)?.label ?? "Time: Newest -> Oldest";
+}
+
+export function getMealsSortOption(filters: Pick<MealsFilterValues, "sort_by" | "sort_type">) {
+  return mealsSortOptions.find(
+    (option) => option.sort_by === filters.sort_by && option.sort_type === filters.sort_type
+  );
+}
+
+export function toMealsSortOptionValue(
+  filters: Pick<MealsFilterValues, "sort_by" | "sort_type">
+): MealsSortOptionValue {
+  return getMealsSortOption(filters)?.value ?? "recorded_at_desc";
+}
+
+export function fromMealsSortOptionValue(value: MealsSortOptionValue) {
+  const option = mealsSortOptions.find((item) => item.value === value) ?? mealsSortOptions[0];
+
+  return {
+    sort_by: option.sort_by,
+    sort_type: option.sort_type,
+  };
 }
 
 export function buildMealsSummary(meals: TodayMeal[]) {

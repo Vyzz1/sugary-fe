@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatMealType } from "../../today/-hooks/add-meal.helpers";
 import type { TodayMeal } from "../../today/-queries/today.query";
+import { mealsSortOptions, type MealsSortOptionValue } from "../-hooks/meals.helpers";
 
 const mealTypeOptions: Array<TodayMeal["meal_type"] | "all"> = [
   "all",
@@ -19,8 +20,10 @@ export function MealsDesktopFilterBar({
   onEndDateChange,
   onMealTypeChange,
   onSearchChange,
+  onSortChange,
   onStartDateChange,
   search,
+  sortValue,
   startDate,
 }: {
   endDate: string;
@@ -28,13 +31,15 @@ export function MealsDesktopFilterBar({
   onEndDateChange: (value: string) => void;
   onMealTypeChange: (value: TodayMeal["meal_type"] | "all") => void;
   onSearchChange: (value: string) => void;
+  onSortChange: (value: MealsSortOptionValue) => void;
   onStartDateChange: (value: string) => void;
   search: string;
+  sortValue: MealsSortOptionValue;
   startDate: string;
 }) {
   return (
     <section className="hidden rounded-2xl border border-border bg-card p-5 md:block">
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))]">
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.6fr)_repeat(4,minmax(0,1fr))]">
         <label className="space-y-2">
           <span className="text-sm font-medium text-foreground">Search meals</span>
           <div className="relative">
@@ -81,6 +86,21 @@ export function MealsDesktopFilterBar({
             {mealTypeOptions.map((option) => (
               <option key={option} value={option}>
                 {option === "all" ? "All meal types" : formatMealType(option)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-foreground">Sort</span>
+          <select
+            className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            onChange={(event) => onSortChange(event.target.value as MealsSortOptionValue)}
+            value={sortValue}
+          >
+            {mealsSortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
