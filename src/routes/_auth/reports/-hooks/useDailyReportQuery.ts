@@ -11,9 +11,10 @@ function toDailyReportApiParams(date: string) {
   return { date };
 }
 
-export function useDailyReportQuery(date: string) {
+export function useDailyReportQuery(date: string, enabled = true) {
   return useApiQuery<DailyReportResponse>(reportKeys.daily(date), BASE_DAILY_REPORT_URL, {
     ...reportQueryOptions,
+    enabled,
     retry: (failureCount, error) => {
       if (isDailyReportNotFound(error)) {
         return false;

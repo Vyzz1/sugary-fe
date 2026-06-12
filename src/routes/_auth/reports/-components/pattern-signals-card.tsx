@@ -1,13 +1,19 @@
 import { ActivitySquare } from "lucide-react";
 
-export function PatternSignalsCard({ patternSignals }: { patternSignals: string[] }) {
+export function PatternSignalsCard({
+  patternSignals,
+  title = "Daily patterns worth watching",
+}: {
+  patternSignals: string[];
+  title?: string;
+}) {
   return (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Pattern signals
         </p>
-        <h3 className="mt-1 text-lg font-semibold text-foreground">Daily patterns worth watching</h3>
+        <h3 className="mt-1 text-lg font-semibold text-foreground">{title}</h3>
       </div>
 
       {patternSignals.length > 0 ? (

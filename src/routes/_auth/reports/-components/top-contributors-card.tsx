@@ -9,9 +9,11 @@ import type { ReportTopContributor } from "../-queries/report.query";
 
 export function TopContributorsCard({
   contributors,
+  periodLabel = "day",
   totalSugar,
 }: {
   contributors: ReportTopContributor[];
+  periodLabel?: "day" | "week";
   totalSugar: number;
 }) {
   return (
@@ -72,7 +74,7 @@ export function TopContributorsCard({
                       />
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      {percent.toFixed(0)}% of today&apos;s total sugar
+                      {percent.toFixed(0)}% of this {periodLabel}&apos;s total sugar
                     </p>
                   </div>
                 </div>

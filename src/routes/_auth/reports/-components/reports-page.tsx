@@ -5,86 +5,140 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DailyReportHero } from "./daily-report-hero";
 import { PatternSignalsCard } from "./pattern-signals-card";
 import { RecommendationsCard } from "./recommendations-card";
-import { ReportHeader } from "./report-header";
+import { ReportHeader, type ReportMode } from "./report-header";
 import { ReportStatsGrid } from "./report-stats-grid";
 import { TopContributorsCard } from "./top-contributors-card";
+import { WeeklyBreakdownCard } from "./weekly-breakdown-card";
 import {
-  getLocalDateString,
+  getDefaultDailyReportDate,
+  getDefaultWeeklyReportStart,
+  getWeekStartDate,
   getReportErrorMessage,
   isDailyReportNotFound,
+  isWeeklyReportNotFound,
   normalizeReportResponse,
+  normalizeWeeklyReportResponse,
+  toLocalDateString,
 } from "../-hooks/report.helpers";
 import { useDailyReportQuery } from "../-hooks/useDailyReportQuery";
 import { useRunDailyReportMutation } from "../-hooks/useRunDailyReportMutation";
+import { useRunWeeklyReportMutation } from "../-hooks/useRunWeeklyReportMutation";
+import { useWeeklyReportQuery } from "../-hooks/useWeeklyReportQuery";
+import type { DailyReportData, WeeklyReportData } from "../-queries/report.query";
 
 export function ReportsPage() {
-  const [date, setDate] = useState(getLocalDateString);
-  const dailyReportQuery = useDailyReportQuery(date);
+  const [mode, setMode] = useState<ReportMode>("daily");
+  const [date, setDate] = useState(getDefaultDailyReportDate);
+  const [weekStart, setWeekStart] = useState(getDefaultWeeklyReportStart);
+  const dailyReportQuery = useDailyReportQuery(date, mode === "daily");
+  const weeklyReportQuery = useWeeklyReportQuery(weekStart, mode === "weekly");
   const runDailyReportMutation = useRunDailyReportMutation();
+  const runWeeklyReportMutation = useRunWeeklyReportMutation();
+  const activeQuery = mode === "daily" ? dailyReportQuery : weeklyReportQuery;
+  const activeMutation = mode === "daily" ? runDailyReportMutation : runWeeklyReportMutation;
+  const isNotFound =
+    activeQuery.isError &&
+    (mode === "daily"
+      ? isDailyReportNotFound(activeQuery.error)
+      : isWeeklyReportNotFound(activeQuery.error));
 
   const handleGenerateReport = () => {
-    runDailyReportMutation.mutate(date);
+    if (mode === "daily") {
+      runDailyReportMutation.mutate(date);
+      return;
+    }
+
+    runWeeklyReportMutation.mutate(weekStart);
+  };
+
+  const handleWeekStartChange = (value: string) => {
+    if (!value) {
+      setWeekStart(value);
+      return;
+    }
+
+    setWeekStart(toLocalDateString(getWeekStartDate(new Date(`${value}T00:00:00`))));
   };
 
   return (
     <div className="mx-auto min-w-0 max-w-7xl space-y-5 overflow-x-hidden px-4 py-4 sm:space-y-6 sm:px-5 lg:px-6">
       <ReportHeader
         date={date}
+        mode={mode}
         onDateChange={setDate}
+        onModeChange={setMode}
+        onWeekStartChange={handleWeekStartChange}
+        weekStart={weekStart}
       />
 
-      {runDailyReportMutation.isSuccess ? (
+      {activeMutation.isSuccess ? (
         <div className="rounded-2xl border border-primary/12 bg-primary/6 px-4 py-3 text-sm text-primary">
-          Report job started. Refreshing the daily report.
+          Report job started. Refreshing the {mode} report.
         </div>
       ) : null}
 
-      {runDailyReportMutation.isError ? (
+      {activeMutation.isError ? (
         <div className="rounded-2xl border border-destructive/20 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-          {getReportErrorMessage(runDailyReportMutation.error)}
+          {getReportErrorMessage(activeMutation.error)}
         </div>
       ) : null}
 
-      {dailyReportQuery.isLoading ? <ReportsLoadingState /> : null}
+      {activeQuery.isLoading ? <ReportsLoadingState /> : null}
 
-      {dailyReportQuery.isError && isDailyReportNotFound(dailyReportQuery.error) ? (
+      {isNotFound ? (
         <ReportEmptyState
-          isGenerating={runDailyReportMutation.isPending}
+          isGenerating={activeMutation.isPending}
+          mode={mode}
           onGenerate={handleGenerateReport}
         />
       ) : null}
 
-      {dailyReportQuery.isError && !isDailyReportNotFound(dailyReportQuery.error) ? (
+      {activeQuery.isError && !isNotFound ? (
         <ReportErrorState
-          errorMessage={getReportErrorMessage(dailyReportQuery.error)}
-          isGenerating={runDailyReportMutation.isPending}
+          errorMessage={getReportErrorMessage(activeQuery.error)}
+          isGenerating={activeMutation.isPending}
+          mode={mode}
           onGenerate={handleGenerateReport}
           onRetry={() => {
-            void dailyReportQuery.refetch();
+            void activeQuery.refetch();
           }}
         />
       ) : null}
 
-      {dailyReportQuery.data ? (
-        <ReportsContent report={normalizeReportResponse(dailyReportQuery.data)} />
+      {mode === "daily" && dailyReportQuery.data ? (
+        <ReportsContent mode={mode} report={normalizeReportResponse(dailyReportQuery.data)} />
+      ) : null}
+
+      {mode === "weekly" && weeklyReportQuery.data ? (
+        <ReportsContent
+          mode={mode}
+          report={normalizeWeeklyReportResponse(weeklyReportQuery.data)}
+        />
       ) : null}
     </div>
   );
 }
 
 function ReportsContent({
+  mode,
   report,
 }: {
-  report: ReturnType<typeof normalizeReportResponse>;
+  mode: ReportMode;
+  report: DailyReportData | WeeklyReportData;
 }) {
   return (
     <div className="space-y-4 sm:space-y-5">
-      <DailyReportHero report={report} />
+      <DailyReportHero mode={mode} report={report} />
+
+      {mode === "weekly" && "daily_breakdown" in report ? (
+        <WeeklyBreakdownCard report={report} />
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px] lg:gap-5">
         <div className="space-y-4 sm:space-y-5">
           <TopContributorsCard
             contributors={report.ai_insights.top_contributors}
+            periodLabel={mode === "weekly" ? "week" : "day"}
             totalSugar={report.total_sugar_grams}
           />
           <RecommendationsCard recommendations={report.ai_insights.recommendations} />
@@ -92,7 +146,10 @@ function ReportsContent({
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <ReportStatsGrid report={report} />
-          <PatternSignalsCard patternSignals={report.ai_insights.pattern_signals} />
+          <PatternSignalsCard
+            patternSignals={report.ai_insights.pattern_signals}
+            title={mode === "weekly" ? "Weekly patterns worth watching" : undefined}
+          />
         </aside>
       </div>
     </div>
@@ -100,22 +157,26 @@ function ReportsContent({
 }
 
 function ReportEmptyState({
+  mode,
   onGenerate,
   isGenerating,
 }: {
+  mode: ReportMode;
   onGenerate: () => void;
   isGenerating: boolean;
 }) {
+  const periodLabel = mode === "weekly" ? "week" : "day";
+
   return (
     <section className="rounded-2xl border border-border bg-card p-5 text-center shadow-sm sm:p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         No report yet
       </p>
       <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-        No report for this day yet
+        No report for this {periodLabel} yet
       </h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Log meals throughout the day, then generate a daily report.
+        Log meals for the {periodLabel}, then generate a {periodLabel} report.
       </p>
       <div className="mt-5 flex justify-center">
         <Button disabled={isGenerating} onClick={onGenerate} type="button">
@@ -128,11 +189,13 @@ function ReportEmptyState({
 }
 
 function ReportErrorState({
+  mode,
   errorMessage,
   onRetry,
   onGenerate,
   isGenerating,
 }: {
+  mode: ReportMode;
   errorMessage: string;
   onRetry: () => void;
   onGenerate: () => void;
@@ -153,7 +216,7 @@ function ReportErrorState({
             </Button>
             <Button disabled={isGenerating} onClick={onGenerate} type="button">
               <Sparkles className="size-4" />
-              {isGenerating ? "Running report..." : "Run report manually"}
+              {isGenerating ? "Running report..." : `Run ${mode} report manually`}
             </Button>
           </div>
         </div>

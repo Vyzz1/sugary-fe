@@ -1,9 +1,9 @@
 import { Activity, AlertTriangle, Flame, Soup } from "lucide-react";
 import { formatRiskLevel, formatSugarValue, getRiskBadgeClass } from "../-hooks/report.helpers";
 import { cn } from "@/lib/utils";
-import type { DailyReportData } from "../-queries/report.query";
+import type { ReportSummaryData } from "../-queries/report.query";
 
-export function ReportStatsGrid({ report }: { report: DailyReportData }) {
+export function ReportStatsGrid({ report }: { report: ReportSummaryData }) {
   return (
     <section className="grid grid-cols-2 gap-2.5 sm:gap-3">
       <StatsCard icon={Soup} label="Meals logged" value={String(report.meal_count)} />
@@ -36,7 +36,7 @@ function StatsCard({
   );
 }
 
-function StatsRiskCard({ risk }: { risk: DailyReportData["highest_risk_level"] }) {
+function StatsRiskCard({ risk }: { risk: ReportSummaryData["highest_risk_level"] }) {
   return (
     <div className="min-w-0 rounded-2xl border border-border bg-card p-3.5 shadow-sm sm:p-4">
       <div className="flex min-w-0 items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:text-[11px] sm:tracking-[0.14em]">
