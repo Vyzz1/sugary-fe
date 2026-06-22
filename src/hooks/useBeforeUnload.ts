@@ -1,14 +1,17 @@
 import { useEffect } from "react";
 
-const useBeforeUnload = (isProcessing: boolean) => {
+const DEFAULT_BEFORE_UNLOAD_MESSAGE = "Your changes may not be saved.";
+
+const useBeforeUnload = (enabled: boolean, message = DEFAULT_BEFORE_UNLOAD_MESSAGE) => {
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isProcessing) {
-        e.preventDefault();
-        e.returnValue =
-          "Your task is being processed. Are you sure you want to leave?";
-        return "Your task is being processed. Are you sure you want to leave?";
-      }
+    if (!enabled) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = message;
+      return message;
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -16,6 +19,7 @@ const useBeforeUnload = (isProcessing: boolean) => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isProcessing]);
+  }, [enabled, message]);
 };
+
 export default useBeforeUnload;

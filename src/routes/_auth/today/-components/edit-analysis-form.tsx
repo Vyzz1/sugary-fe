@@ -2,8 +2,16 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import useBeforeUnload from "@/hooks/useBeforeUnload";
 import { getErrorMessage } from "@/lib/error";
 import { useUpdateMealAnalysisMutation } from "../-hooks/useUpdateMealAnalysisMutation";
 import type { TodayMeal } from "../-queries/today.query";
@@ -38,6 +46,13 @@ export function EditAnalysisForm({
   });
 
   const updateMealAnalysisMutation = useUpdateMealAnalysisMutation(onSuccess);
+
+  useBeforeUnload(
+    form.formState.isDirty || updateMealAnalysisMutation.isPending,
+    updateMealAnalysisMutation.isPending
+      ? "Your analysis changes are still being saved."
+      : "Your analysis changes may not be saved."
+  );
 
   useEffect(() => {
     if (!meal) {
@@ -79,8 +94,18 @@ export function EditAnalysisForm({
         <div className="grid min-h-[320px] flex-1 gap-4 sm:grid-cols-2">
           <NumberField control={form.control} label="Sugar" name="estimated_sugar_grams" unit="g" />
           <NumberField control={form.control} label="Carbs" name="estimated_carbs_grams" unit="g" />
-          <NumberField control={form.control} label="Protein" name="estimated_protein_grams" unit="g" />
-          <NumberField control={form.control} label="Calories" name="estimated_calories" unit="kcal" />
+          <NumberField
+            control={form.control}
+            label="Protein"
+            name="estimated_protein_grams"
+            unit="g"
+          />
+          <NumberField
+            control={form.control}
+            label="Calories"
+            name="estimated_calories"
+            unit="kcal"
+          />
         </div>
 
         {form.formState.errors.root?.message ? (
@@ -88,7 +113,11 @@ export function EditAnalysisForm({
         ) : null}
 
         <div className="sticky bottom-0 -mx-4 border-t border-border bg-background px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] md:static md:mx-0 md:border-0 md:bg-transparent md:px-0 md:pt-0 md:pb-0">
-          <Button className="w-full md:w-auto" disabled={updateMealAnalysisMutation.isPending} type="submit">
+          <Button
+            className="w-full md:w-auto"
+            disabled={updateMealAnalysisMutation.isPending}
+            type="submit"
+          >
             {updateMealAnalysisMutation.isPending ? "Saving analysis..." : "Save analysis"}
           </Button>
         </div>

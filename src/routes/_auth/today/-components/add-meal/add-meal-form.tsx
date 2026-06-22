@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import useBeforeUnload from "@/hooks/useBeforeUnload";
 import { getErrorMessage } from "@/lib/error";
 import {
   buildCreateMealPayload,
@@ -86,6 +87,21 @@ export function AddMealForm({
     onSuccess();
   });
   const watchedDishName = form.watch("dish_name");
+  const isSavingMeal =
+    submitStage !== "idle" ||
+    createMealMutation.isPending ||
+    updateMealMutation.isPending ||
+    uploadMealImageMutation.isPending;
+  const hasMealDraftChanges =
+    form.formState.isDirty ||
+    imageFile !== null ||
+    selectedRecentMeal !== null ||
+    existingImageUrl !== (initialMeal?.image_url ?? null);
+
+  useBeforeUnload(
+    isSavingMeal || hasMealDraftChanges,
+    isSavingMeal ? "Your meal is still being saved." : "Your meal changes may not be saved."
+  );
 
   React.useEffect(() => {
     if (mode === "edit") {

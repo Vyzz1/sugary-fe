@@ -26,9 +26,33 @@ export function RecentMealPicker({
   const isMobile = useIsMobile();
   const [isPickerOpen, setIsPickerOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
+  const [highlightedMealId, setHighlightedMealId] = React.useState<number | null>(null);
   const debouncedQuery = useDebounce(query, 300);
   const recentMealsQuery = useRecentMealsQuery(debouncedQuery, true);
   const meals = recentMealsQuery.data?.data ?? [];
+
+  React.useEffect(() => {
+    if (!isPickerOpen) {
+      return;
+    }
+
+    if (meals.length === 0) {
+      setHighlightedMealId(null);
+      return;
+    }
+
+    setHighlightedMealId((currentMealId) => {
+      if (currentMealId && meals.some((meal) => meal.id === currentMealId)) {
+        return currentMealId;
+      }
+
+      if (selectedMeal?.id && meals.some((meal) => meal.id === selectedMeal.id)) {
+        return selectedMeal.id;
+      }
+
+      return meals[0].id;
+    });
+  }, [isPickerOpen, meals, selectedMeal?.id]);
 
   return (
     <div className="space-y-4">
@@ -76,7 +100,9 @@ export function RecentMealPicker({
             <div className="h-full flex-1 overflow-y-auto px-4 pb-6">
               <RecentMealPickerPanel
                 meals={meals}
+                highlightedMealId={highlightedMealId}
                 onClearQuery={() => setQuery("")}
+                onHighlightMeal={setHighlightedMealId}
                 onQueryChange={setQuery}
                 onSelectMeal={(meal) => {
                   onSelectMeal(meal);
@@ -111,7 +137,9 @@ export function RecentMealPicker({
             <div className="h-full max-h-[80vh] overflow-y-auto px-6 py-5">
               <RecentMealPickerPanel
                 meals={meals}
+                highlightedMealId={highlightedMealId}
                 onClearQuery={() => setQuery("")}
+                onHighlightMeal={setHighlightedMealId}
                 onQueryChange={setQuery}
                 onSelectMeal={(meal) => {
                   onSelectMeal(meal);
@@ -134,7 +162,9 @@ function RecentMealPickerPanel({
   onQueryChange,
   onClearQuery,
   meals,
+  highlightedMealId,
   selectedMealId,
+  onHighlightMeal,
   onSelectMeal,
   recentMealsQuery,
 }: {
@@ -142,11 +172,53 @@ function RecentMealPickerPanel({
   onQueryChange: (value: string) => void;
   onClearQuery: () => void;
   meals: TodayMeal[];
+  highlightedMealId: number | null;
   selectedMealId: number | null;
+  onHighlightMeal: (mealId: number | null) => void;
   onSelectMeal: (meal: TodayMeal) => void;
   recentMealsQuery: ReturnType<typeof useRecentMealsQuery>;
 }) {
   const hasQuery = Boolean(query.trim());
+  const highlightedMealIndex = meals.findIndex((meal) => meal.id === highlightedMealId);
+  const highlightedMeal =
+    highlightedMealIndex >= 0 ? meals[highlightedMealIndex] : (meals[0] ?? null);
+  const highlightedMealRefs = React.useRef(new Map<number, HTMLButtonElement>());
+
+  React.useEffect(() => {
+    if (!highlightedMealId) {
+      return;
+    }
+
+    highlightedMealRefs.current.get(highlightedMealId)?.scrollIntoView({
+      block: "nearest",
+    });
+  }, [highlightedMealId]);
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (recentMealsQuery.isLoading || meals.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      const nextIndex =
+        highlightedMealIndex >= 0 ? Math.min(highlightedMealIndex + 1, meals.length - 1) : 0;
+      onHighlightMeal(meals[nextIndex].id);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      const nextIndex = highlightedMealIndex >= 0 ? Math.max(highlightedMealIndex - 1, 0) : 0;
+      onHighlightMeal(meals[nextIndex].id);
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onSelectMeal(highlightedMeal);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col space-y-4 md:h-[440px]">
@@ -157,6 +229,7 @@ function RecentMealPickerPanel({
           <Input
             className="rounded-xl pl-10"
             onChange={(event) => onQueryChange(event.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Search recent meals..."
             value={query}
           />
@@ -185,14 +258,28 @@ function RecentMealPickerPanel({
           <div className="w-full space-y-2">
             {meals.map((meal) => {
               const isSelected = selectedMealId === meal.id;
+              const isHighlighted = highlightedMealId === meal.id;
 
               return (
                 <button
                   className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
-                    isSelected ? "border-primary bg-primary/6" : "border-border bg-card"
+                    isSelected
+                      ? "border-primary bg-primary/6"
+                      : isHighlighted
+                        ? "border-primary/60 bg-primary/4"
+                        : "border-border bg-card"
                   }`}
                   key={meal.id}
                   onClick={() => onSelectMeal(meal)}
+                  onMouseEnter={() => onHighlightMeal(meal.id)}
+                  ref={(element) => {
+                    if (element) {
+                      highlightedMealRefs.current.set(meal.id, element);
+                      return;
+                    }
+
+                    highlightedMealRefs.current.delete(meal.id);
+                  }}
                   type="button"
                 >
                   <div className="flex items-start justify-between gap-3">
