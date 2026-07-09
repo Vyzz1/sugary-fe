@@ -33,7 +33,7 @@ export function ReportMealsDrawer({
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[90dvh] flex flex-col">
+        <DrawerContent className="h-[85dvh] flex flex-col">
           <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle>{title}</DrawerTitle>
             <DrawerDescription>Meals consumed on this day.</DrawerDescription>
@@ -72,8 +72,8 @@ function MealsList({ date }: { date: string | null }) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-32 w-full rounded-xl" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-40 w-full rounded-xl" />
         ))}
       </div>
     );
