@@ -7,8 +7,16 @@ export function ReportStatsGrid({ report }: { report: ReportSummaryData }) {
   return (
     <section className="grid grid-cols-2 gap-2.5 sm:gap-3">
       <StatsCard icon={Soup} label="Meals logged" value={String(report.meal_count)} />
-      <StatsCard icon={Flame} label="Total sugar" value={`${formatSugarValue(report.total_sugar_grams)} g`} />
-      <StatsCard icon={Activity} label="Average sugar" value={`${formatSugarValue(report.average_sugar_grams)} g`} />
+      <StatsCard
+        icon={Flame}
+        label="Total sugar"
+        value={`${formatSugarValue(report.total_sugar_grams)} g`}
+      />
+      <StatsCard
+        icon={Activity}
+        label="Average sugar"
+        value={`${formatSugarValue(report.average_sugar_grams)} g`}
+      />
       <StatsRiskCard risk={report.highest_risk_level} />
     </section>
   );

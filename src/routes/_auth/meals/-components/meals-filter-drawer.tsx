@@ -79,7 +79,9 @@ export function MealsFilterDrawer({
             <span className="text-sm font-medium text-foreground">Meal type</span>
             <select
               className="h-9 w-full rounded-xl border border-border bg-background px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-              onChange={(event) => onMealTypeChange(event.target.value as TodayMeal["meal_type"] | "all")}
+              onChange={(event) =>
+                onMealTypeChange(event.target.value as TodayMeal["meal_type"] | "all")
+              }
               value={mealType}
             >
               {mealTypeOptions.map((option) => (
@@ -98,7 +100,12 @@ export function MealsFilterDrawer({
           <Button className="h-9 rounded-xl text-sm" onClick={onApply} type="button">
             Apply filters
           </Button>
-          <Button className="h-9 rounded-xl text-sm" onClick={onClear} type="button" variant="outline">
+          <Button
+            className="h-9 rounded-xl text-sm"
+            onClick={onClear}
+            type="button"
+            variant="outline"
+          >
             Clear filters
           </Button>
         </DrawerFooter>

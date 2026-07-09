@@ -83,7 +83,11 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>) 
 
   return (
     <Label
-      className={cn("text-sm font-semibold text-foreground", error && "text-destructive", className)}
+      className={cn(
+        "text-sm font-semibold text-foreground",
+        error && "text-destructive",
+        className
+      )}
       htmlFor={formItemId}
       {...props}
     />

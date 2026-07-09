@@ -1,10 +1,4 @@
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowDownAZ,
-  ArrowUpAZ,
-  Check,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowDownAZ, ArrowUpAZ, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,

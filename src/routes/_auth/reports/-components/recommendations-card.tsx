@@ -7,7 +7,9 @@ export function RecommendationsCard({ recommendations }: { recommendations: stri
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Recommendations
         </p>
-        <h3 className="mt-1 text-lg font-semibold text-foreground">Action plan for the next meals</h3>
+        <h3 className="mt-1 text-lg font-semibold text-foreground">
+          Action plan for the next meals
+        </h3>
       </div>
 
       {recommendations.length > 0 ? (

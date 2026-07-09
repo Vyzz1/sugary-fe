@@ -49,8 +49,9 @@ import { useMealsInfiniteQuery } from "../-hooks/useMealsInfiniteQuery";
 export function MealsPage() {
   const isMobile = useIsMobile();
   const [filters, setFilters] = useState<MealsFilterValues>(getDefaultMealsFilterValues);
-  const [mobileDrawerFilters, setMobileDrawerFilters] =
-    useState<MealsFilterValues>(getDefaultMealsFilterValues);
+  const [mobileDrawerFilters, setMobileDrawerFilters] = useState<MealsFilterValues>(
+    getDefaultMealsFilterValues
+  );
   const [isMobileFilterDrawerOpen, setIsMobileFilterDrawerOpen] = useState(false);
   const [isMobileSortDrawerOpen, setIsMobileSortDrawerOpen] = useState(false);
   const [isAddMealOpen, setIsAddMealOpen] = useState(false);
@@ -219,7 +220,11 @@ export function MealsPage() {
             </p>
           </div>
 
-          <Button className="h-11 shrink-0 rounded-xl" onClick={() => openAddMeal("upload")} type="button">
+          <Button
+            className="h-11 shrink-0 rounded-xl"
+            onClick={() => openAddMeal("upload")}
+            type="button"
+          >
             Add meal
           </Button>
         </div>
@@ -307,12 +312,18 @@ export function MealsPage() {
                   </div>
                 ) : null}
                 {mealsQuery.hasNextPage ? (
-                  <Button onClick={() => void mealsQuery.fetchNextPage()} type="button" variant="outline">
+                  <Button
+                    onClick={() => void mealsQuery.fetchNextPage()}
+                    type="button"
+                    variant="outline"
+                  >
                     <ChevronDown className="size-4" />
                     Load more
                   </Button>
                 ) : allMeals.length > 0 ? (
-                  <p className="text-sm text-muted-foreground">You&apos;ve reached the end of this range.</p>
+                  <p className="text-sm text-muted-foreground">
+                    You&apos;ve reached the end of this range.
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -405,7 +416,9 @@ export function MealsPage() {
             <EditAnalysisForm
               key={editAnalysisSessionKey}
               dateKey={
-                mealEditingAnalysis ? toMealDateKey(mealEditingAnalysis.recorded_at) : filters.end_date
+                mealEditingAnalysis
+                  ? toMealDateKey(mealEditingAnalysis.recorded_at)
+                  : filters.end_date
               }
               meal={mealEditingAnalysis}
               onSuccess={() => {
@@ -469,7 +482,9 @@ export function MealsPage() {
             <EditAnalysisForm
               key={editAnalysisSessionKey}
               dateKey={
-                mealEditingAnalysis ? toMealDateKey(mealEditingAnalysis.recorded_at) : filters.end_date
+                mealEditingAnalysis
+                  ? toMealDateKey(mealEditingAnalysis.recorded_at)
+                  : filters.end_date
               }
               meal={mealEditingAnalysis}
               onSuccess={() => {

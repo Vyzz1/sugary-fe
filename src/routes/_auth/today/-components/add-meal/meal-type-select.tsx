@@ -1,7 +1,7 @@
 import { formatMealType, type MealType } from "../../-hooks/add-meal.helpers";
 import { Label } from "@/components/ui/label";
 
-const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snack","drink", "unspecified"];
+const mealTypes: MealType[] = ["breakfast", "lunch", "dinner", "snack", "drink", "unspecified"];
 
 export function MealTypeSelect({
   value,

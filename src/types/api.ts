@@ -3,8 +3,10 @@ export interface BaseResponse<TData> {
   data: TData;
 }
 
-export interface BaseResponseWithMeta<TData, TMeta = Record<string, unknown>>
-  extends BaseResponse<TData> {
+export interface BaseResponseWithMeta<
+  TData,
+  TMeta = Record<string, unknown>,
+> extends BaseResponse<TData> {
   meta: TMeta;
 }
 

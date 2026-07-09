@@ -112,6 +112,9 @@ export async function updateMealAnalysis(
     estimated_calories: number;
   }
 ) {
-  const response = await api.patch<UpdateMealAnalysisResponse>(`/api/meals/${mealId}/analysis`, payload);
+  const response = await api.patch<UpdateMealAnalysisResponse>(
+    `/api/meals/${mealId}/analysis`,
+    payload
+  );
   return response.data.data;
 }

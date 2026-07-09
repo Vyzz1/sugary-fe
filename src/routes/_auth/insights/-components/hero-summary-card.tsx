@@ -1,11 +1,5 @@
 import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatInsightDate,
   formatInsightNumber,

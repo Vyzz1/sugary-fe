@@ -12,22 +12,18 @@ function toWeeklyReportApiParams(weekStart: string) {
 }
 
 export function useWeeklyReportQuery(weekStart: string, enabled: boolean) {
-  return useApiQuery<WeeklyReportResponse>(
-    reportKeys.weekly(weekStart),
-    BASE_WEEKLY_REPORT_URL,
-    {
-      ...reportQueryOptions,
-      enabled,
-      retry: (failureCount, error) => {
-        if (isWeeklyReportNotFound(error)) {
-          return false;
-        }
+  return useApiQuery<WeeklyReportResponse>(reportKeys.weekly(weekStart), BASE_WEEKLY_REPORT_URL, {
+    ...reportQueryOptions,
+    enabled,
+    retry: (failureCount, error) => {
+      if (isWeeklyReportNotFound(error)) {
+        return false;
+      }
 
-        return failureCount < 2;
-      },
-      axiosConfig: {
-        params: toWeeklyReportApiParams(weekStart),
-      },
-    }
-  );
+      return failureCount < 2;
+    },
+    axiosConfig: {
+      params: toWeeklyReportApiParams(weekStart),
+    },
+  });
 }

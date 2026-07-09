@@ -80,7 +80,9 @@ export function MealsDesktopFilterBar({
           <span className="text-sm font-medium text-foreground">Meal type</span>
           <select
             className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-            onChange={(event) => onMealTypeChange(event.target.value as TodayMeal["meal_type"] | "all")}
+            onChange={(event) =>
+              onMealTypeChange(event.target.value as TodayMeal["meal_type"] | "all")
+            }
             value={mealType}
           >
             {mealTypeOptions.map((option) => (

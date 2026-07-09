@@ -67,18 +67,18 @@ export function ReportHeader({
           </label>
         ) : (
           <label className="space-y-2">
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-            <CalendarDays className="size-4 text-primary" />
-            Week start
-          </span>
-          <input
-            className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-            onChange={(event) => onWeekStartChange(event.target.value)}
-            type="date"
-            value={weekStart}
-          />
-          <p className="text-xs text-muted-foreground">{weekRange}</p>
-        </label>
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+              <CalendarDays className="size-4 text-primary" />
+              Week start
+            </span>
+            <input
+              className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+              onChange={(event) => onWeekStartChange(event.target.value)}
+              type="date"
+              value={weekStart}
+            />
+            <p className="text-xs text-muted-foreground">{weekRange}</p>
+          </label>
         )}
       </div>
     </section>

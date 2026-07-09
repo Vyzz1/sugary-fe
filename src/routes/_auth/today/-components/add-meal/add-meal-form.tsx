@@ -252,9 +252,9 @@ export function AddMealForm({
         ? "Saving meal..."
         : mode === "edit"
           ? "Save changes"
-        : tab === "recent"
-          ? "Add from recent"
-          : "Save meal";
+          : tab === "recent"
+            ? "Add from recent"
+            : "Save meal";
   const hasAnalysisRerunChange =
     mode === "edit" &&
     initialMeal &&
@@ -278,7 +278,9 @@ export function AddMealForm({
             </button>
             <button
               className={`rounded-lg px-3 py-2 text-sm font-medium ${
-                tab === "recent" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                tab === "recent"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
               }`}
               onClick={() => setTab("recent")}
               type="button"

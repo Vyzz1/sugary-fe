@@ -1,7 +1,11 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "@/lib/axios";
-import { mealsHistoryKeys, type MealsHistoryQueryParams, type MealsHistoryResponse } from "../-queries/meals.query";
+import {
+  mealsHistoryKeys,
+  type MealsHistoryQueryParams,
+  type MealsHistoryResponse,
+} from "../-queries/meals.query";
 
 const DEFAULT_PAGE_SIZE = 20;
 

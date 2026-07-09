@@ -12,7 +12,12 @@ export interface MealsHistoryQueryParams {
   end_date: string;
   q?: string;
   meal_type?: TodayMeal["meal_type"];
-  sort_by?: "recorded_at" | "dish_name" | "meal_type" | "estimated_sugar_grams" | "estimated_calories";
+  sort_by?:
+    | "recorded_at"
+    | "dish_name"
+    | "meal_type"
+    | "estimated_sugar_grams"
+    | "estimated_calories";
   sort_type?: "desc" | "asc";
 }
 

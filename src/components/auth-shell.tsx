@@ -1,10 +1,4 @@
-import {
-  Activity,
-  BarChart3,
-  CalendarDays,
-  ChartColumnBig,
-  Soup,
-} from "lucide-react";
+import { Activity, BarChart3, CalendarDays, ChartColumnBig, Soup } from "lucide-react";
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
 import {
   Sidebar,
@@ -50,7 +44,8 @@ const navigationItems = [
 
 export function AuthShell() {
   const location = useLocation();
-  const activeItem = navigationItems.find((item) => item.to === location.pathname) ?? navigationItems[0];
+  const activeItem =
+    navigationItems.find((item) => item.to === location.pathname) ?? navigationItems[0];
 
   return (
     <SidebarProvider
@@ -103,22 +98,22 @@ export function AuthShell() {
         </SidebarFooter>
       </Sidebar>
 
-        <SidebarInset className="min-h-svh pb-20 md:pb-0">
-          <header className="border-b border-border/70 bg-background/80 px-4 py-4 backdrop-blur md:px-8 md:py-5">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <SidebarTrigger className="mt-0.5 hidden md:inline-flex" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Sugar Checker
-                  </p>
-                  <h1 className="mt-1 font-heading text-2xl text-foreground md:text-3xl">
-                    {activeItem.label}
-                  </h1>
-                </div>
+      <SidebarInset className="min-h-svh pb-20 md:pb-0">
+        <header className="border-b border-border/70 bg-background/80 px-4 py-4 backdrop-blur md:px-8 md:py-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <SidebarTrigger className="mt-0.5 hidden md:inline-flex" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Sugar Checker
+                </p>
+                <h1 className="mt-1 font-heading text-2xl text-foreground md:text-3xl">
+                  {activeItem.label}
+                </h1>
               </div>
-              <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm text-muted-foreground md:flex">
-                <BarChart3 className="size-4 text-foreground" />
+            </div>
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm text-muted-foreground md:flex">
+              <BarChart3 className="size-4 text-foreground" />
               {activeItem.description}
             </div>
           </div>

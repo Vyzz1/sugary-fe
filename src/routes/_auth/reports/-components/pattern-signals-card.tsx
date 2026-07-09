@@ -19,10 +19,7 @@ export function PatternSignalsCard({
       {patternSignals.length > 0 ? (
         <div className="mt-4 space-y-3">
           {patternSignals.map((signal) => (
-            <article
-              key={signal}
-              className="rounded-2xl border border-border bg-muted/25 p-4"
-            >
+            <article key={signal} className="rounded-2xl border border-border bg-muted/25 p-4">
               <div className="flex gap-3">
                 <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <ActivitySquare className="size-4" />
@@ -33,9 +30,7 @@ export function PatternSignalsCard({
           ))}
         </div>
       ) : (
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          No pattern signals detected.
-        </p>
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">No pattern signals detected.</p>
       )}
     </section>
   );

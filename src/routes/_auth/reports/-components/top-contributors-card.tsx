@@ -1,10 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  formatMealType,
-  formatRiskLevel,
-  getRiskBadgeClass,
-} from "../-hooks/report.helpers";
+import { formatMealType, formatRiskLevel, getRiskBadgeClass } from "../-hooks/report.helpers";
 import type { ReportTopContributor } from "../-queries/report.query";
 
 export function TopContributorsCard({
@@ -30,7 +26,8 @@ export function TopContributorsCard({
       {contributors.length > 0 ? (
         <div className="mt-4 space-y-3">
           {contributors.map((contributor, index) => {
-            const percent = totalSugar > 0 ? (contributor.estimated_sugar_grams / totalSugar) * 100 : 0;
+            const percent =
+              totalSugar > 0 ? (contributor.estimated_sugar_grams / totalSugar) * 100 : 0;
 
             return (
               <article

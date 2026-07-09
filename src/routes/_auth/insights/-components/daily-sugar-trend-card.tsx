@@ -1,6 +1,11 @@
 import { Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip } from "@/components/ui/chart";
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+} from "@/components/ui/chart";
 import { formatInsightDate, formatInsightNumber } from "../-hooks/insight.helpers";
 import { insightChartConfig } from "./insights-chart-config";
 import type { InsightData } from "../-queries/insights.query";
@@ -89,7 +94,9 @@ function DailySugarTooltip({
         {formatInsightNumber(data.total_sugar_grams)} g sugar
       </p>
       {data.total_carbs_grams !== undefined ? (
-        <p className="text-muted-foreground">{formatInsightNumber(data.total_carbs_grams)} g carbs</p>
+        <p className="text-muted-foreground">
+          {formatInsightNumber(data.total_carbs_grams)} g carbs
+        </p>
       ) : null}
       {data.total_protein_grams !== undefined ? (
         <p className="text-muted-foreground">
@@ -97,9 +104,7 @@ function DailySugarTooltip({
         </p>
       ) : null}
       {data.total_calories !== undefined ? (
-        <p className="text-muted-foreground">
-          {formatInsightNumber(data.total_calories, 0)} kcal
-        </p>
+        <p className="text-muted-foreground">{formatInsightNumber(data.total_calories, 0)} kcal</p>
       ) : null}
       <p className="text-muted-foreground">{data.meal_count} meals</p>
       <p className="text-muted-foreground">{data.risk_level} risk</p>
