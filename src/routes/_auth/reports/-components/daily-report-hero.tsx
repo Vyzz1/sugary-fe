@@ -12,9 +12,11 @@ import type { DailyReportData, WeeklyReportData } from "../-queries/report.query
 export function DailyReportHero({
   report,
   mode,
+  onViewMeals,
 }: {
   report: DailyReportData | WeeklyReportData;
   mode: "daily" | "weekly";
+  onViewMeals: (date: string) => void;
 }) {
   const periodLabel = getReportPeriodLabel(report, mode);
 
@@ -42,16 +44,30 @@ export function DailyReportHero({
             </span>
           </div>
 
-          <p className="max-w-3xl break-words text-sm leading-6 text-muted-foreground">
-            {report.ai_insights.summary || report.summary}
-          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <p className="max-w-3xl break-words text-sm leading-6 text-muted-foreground flex-1">
+              {report.ai_insights.summary || report.summary}
+            </p>
+            {mode === "daily" && "date" in report ? (
+              <button
+                type="button"
+                onClick={() => onViewMeals(report.date)}
+                className="inline-flex shrink-0 items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                View meals
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function getReportPeriodLabel(report: DailyReportData | WeeklyReportData, mode: "daily" | "weekly") {
+function getReportPeriodLabel(
+  report: DailyReportData | WeeklyReportData,
+  mode: "daily" | "weekly"
+) {
   if (mode === "weekly" && "week_start_date" in report) {
     return formatReportWeekRange(report);
   }

@@ -21,7 +21,13 @@ const weeklyBreakdownChartConfig = {
   },
 } satisfies ChartConfig;
 
-export function WeeklyBreakdownCard({ report }: { report: WeeklyReportData }) {
+export function WeeklyBreakdownCard({
+  report,
+  onViewMeals,
+}: {
+  report: WeeklyReportData;
+  onViewMeals: (date: string) => void;
+}) {
   return (
     <section className="min-w-0 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div>
@@ -110,9 +116,11 @@ export function WeeklyBreakdownCard({ report }: { report: WeeklyReportData }) {
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
         {report.daily_breakdown.map((day) => (
-          <article
+          <button
             key={day.date}
-            className="min-w-0 rounded-xl border border-border bg-muted/25 p-3"
+            type="button"
+            onClick={() => onViewMeals(day.date)}
+            className="block w-full min-w-0 text-left rounded-xl border border-border bg-muted/25 p-3 hover:border-primary/40 hover:bg-muted/50 cursor-pointer transition-colors"
           >
             <div className="flex items-center justify-between gap-2 lg:block">
               <p className="text-xs font-semibold text-foreground">{formatChartDate(day.date)}</p>
@@ -129,7 +137,7 @@ export function WeeklyBreakdownCard({ report }: { report: WeeklyReportData }) {
               {formatSugarValue(day.total_sugar_grams)} g
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{day.meal_count} meals</p>
-          </article>
+          </button>
         ))}
       </div>
     </section>

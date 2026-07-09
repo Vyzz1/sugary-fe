@@ -72,9 +72,9 @@ export function MealHistoryItem({
 }: {
   isDeleting?: boolean;
   meal: TodayMeal;
-  onDelete: (meal: TodayMeal) => void;
-  onEdit: (meal: TodayMeal) => void;
-  onEditAnalysis: (meal: TodayMeal) => void;
+  onDelete?: (meal: TodayMeal) => void;
+  onEdit?: (meal: TodayMeal) => void;
+  onEditAnalysis?: (meal: TodayMeal) => void;
 }) {
   const mealMeta = mealTypeMeta[meal.meal_type];
   const MealIcon = mealMeta.icon;
@@ -134,37 +134,39 @@ export function MealHistoryItem({
               </h3>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-label={`Meal actions for ${meal.dish_name}`}
-                  className="size-[26px] rounded-md hover:bg-primary/8"
-                  size="icon-sm"
-                  type="button"
-                  variant="ghost"
-                >
-                  <Ellipsis className="size-3.5 text-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(meal)}>
-                  <Pencil className="size-4 text-primary" />
-                  Edit meal
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEditAnalysis(meal)}>
-                  <SlidersHorizontal className="size-4 text-primary" />
-                  Edit analysis
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={isDeleting}
-                  onClick={() => onDelete(meal)}
-                  variant="destructive"
-                >
-                  <Trash2 className="size-4" />
-                  Delete meal
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {onEdit && onEditAnalysis && onDelete ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    aria-label={`Meal actions for ${meal.dish_name}`}
+                    className="size-[26px] rounded-md hover:bg-primary/8"
+                    size="icon-sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Ellipsis className="size-3.5 text-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(meal)}>
+                    <Pencil className="size-4 text-primary" />
+                    Edit meal
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEditAnalysis(meal)}>
+                    <SlidersHorizontal className="size-4 text-primary" />
+                    Edit analysis
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={isDeleting}
+                    onClick={() => onDelete(meal)}
+                    variant="destructive"
+                  >
+                    <Trash2 className="size-4" />
+                    Delete meal
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </div>
 
           <div className="flex min-h-6 items-center">

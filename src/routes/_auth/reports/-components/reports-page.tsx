@@ -6,6 +6,7 @@ import { DailyReportHero } from "./daily-report-hero";
 import { PatternSignalsCard } from "./pattern-signals-card";
 import { RecommendationsCard } from "./recommendations-card";
 import { ReportHeader, type ReportMode } from "./report-header";
+import { ReportMealsDrawer } from "./report-meals-drawer";
 import { ReportStatsGrid } from "./report-stats-grid";
 import { TopContributorsCard } from "./top-contributors-card";
 import { WeeklyBreakdownCard } from "./weekly-breakdown-card";
@@ -30,6 +31,7 @@ export function ReportsPage() {
   const [mode, setMode] = useState<ReportMode>("daily");
   const [date, setDate] = useState(getDefaultDailyReportDate);
   const [weekStart, setWeekStart] = useState(getDefaultWeeklyReportStart);
+  const [mealsDateToView, setMealsDateToView] = useState<string | null>(null);
   const dailyReportQuery = useDailyReportQuery(date, mode === "daily");
   const weeklyReportQuery = useWeeklyReportQuery(weekStart, mode === "weekly");
   const runDailyReportMutation = useRunDailyReportMutation();
@@ -106,15 +108,26 @@ export function ReportsPage() {
       ) : null}
 
       {mode === "daily" && dailyReportQuery.data ? (
-        <ReportsContent mode={mode} report={normalizeReportResponse(dailyReportQuery.data)} />
+        <ReportsContent
+          mode={mode}
+          report={normalizeReportResponse(dailyReportQuery.data)}
+          onViewMeals={setMealsDateToView}
+        />
       ) : null}
 
       {mode === "weekly" && weeklyReportQuery.data ? (
         <ReportsContent
           mode={mode}
           report={normalizeWeeklyReportResponse(weeklyReportQuery.data)}
+          onViewMeals={setMealsDateToView}
         />
       ) : null}
+
+      <ReportMealsDrawer
+        date={mealsDateToView}
+        isOpen={!!mealsDateToView}
+        onClose={() => setMealsDateToView(null)}
+      />
     </div>
   );
 }
@@ -122,16 +135,18 @@ export function ReportsPage() {
 function ReportsContent({
   mode,
   report,
+  onViewMeals,
 }: {
   mode: ReportMode;
   report: DailyReportData | WeeklyReportData;
+  onViewMeals: (date: string) => void;
 }) {
   return (
     <div className="space-y-4 sm:space-y-5">
-      <DailyReportHero mode={mode} report={report} />
+      <DailyReportHero mode={mode} report={report} onViewMeals={onViewMeals} />
 
       {mode === "weekly" && "daily_breakdown" in report ? (
-        <WeeklyBreakdownCard report={report} />
+        <WeeklyBreakdownCard report={report} onViewMeals={onViewMeals} />
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px] lg:gap-5">
