@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import api from "@/lib/axios";
 import {
@@ -33,6 +33,7 @@ export function useMealsInfiniteQuery(filters: MealsHistoryQueryParams) {
       const hasMore = lastPage.meta.page * lastPage.meta.page_size < lastPage.meta.total;
       return hasMore ? lastPage.meta.page + 1 : undefined;
     },
+    placeholderData: keepPreviousData,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });

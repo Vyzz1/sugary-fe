@@ -1,10 +1,11 @@
-import { ArrowDownUp, Filter, Plus, Search } from "lucide-react";
+import { ArrowDownUp, Filter, Loader2, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MealsSummaryCompact } from "./meals-summary-compact";
 
 export function MealsMobileFilterBar({
   highRiskCount,
+  isRefreshing = false,
   mealsFound,
   onAddMeal,
   onOpenFilters,
@@ -16,6 +17,7 @@ export function MealsMobileFilterBar({
   totalSugar,
 }: {
   highRiskCount: number;
+  isRefreshing?: boolean;
   mealsFound: number;
   onAddMeal: () => void;
   onOpenFilters: () => void;
@@ -36,12 +38,19 @@ export function MealsMobileFilterBar({
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="h-9 rounded-xl border-border bg-card pl-8.5 text-sm"
+          className="h-9 rounded-xl border-border bg-card pr-9 pl-8.5 text-sm"
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search meals..."
           type="search"
           value={search}
         />
+        {isRefreshing ? (
+          <Loader2
+            aria-label="Updating results"
+            className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+            role="status"
+          />
+        ) : null}
       </div>
 
       <div className="grid grid-cols-3 gap-2">

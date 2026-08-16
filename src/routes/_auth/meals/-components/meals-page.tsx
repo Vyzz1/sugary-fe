@@ -81,13 +81,14 @@ export function MealsPage() {
   const latestMeta = mealsQuery.data?.pages[mealsQuery.data.pages.length - 1]?.meta;
   const mealsSummary = useMemo(() => buildMealsSummary(allMeals), [allMeals]);
   const deletingMealId = deleteMealMutation.isPending ? deleteMealMutation.variables.mealId : null;
+  const isRefreshingResults = mealsQuery.isPlaceholderData || filters.q !== debouncedSearch;
   const appliedFilters = hasMealsFiltersApplied(filters);
   const rangeLabel = formatHistoryRangeLabel(filters.start_date, filters.end_date);
   const sortLabel = formatMealsSortLabel(filters);
   const selectedSortValue = toMealsSortOptionValue(filters);
 
   useEffect(() => {
-    if (!mealsQuery.hasNextPage || mealsQuery.isFetchingNextPage) {
+    if (!mealsQuery.hasNextPage || mealsQuery.isFetchingNextPage || mealsQuery.isPlaceholderData) {
       return;
     }
 
@@ -196,6 +197,7 @@ export function MealsPage() {
     <div className="mx-auto max-w-7xl space-y-4 px-4 py-4 pb-24 sm:space-y-5 sm:px-5 lg:px-6">
       <MealsMobileFilterBar
         highRiskCount={mealsSummary.highRiskCount}
+        isRefreshing={isRefreshingResults}
         mealsFound={latestMeta?.total ?? allMeals.length}
         onAddMeal={() => openAddMeal("camera")}
         onOpenFilters={handleOpenMobileFilters}
@@ -232,6 +234,7 @@ export function MealsPage() {
 
       <MealsDesktopFilterBar
         endDate={filters.end_date}
+        isRefreshing={isRefreshingResults}
         mealType={filters.meal_type}
         onEndDateChange={(value) => setFilters((current) => ({ ...current, end_date: value }))}
         onMealTypeChange={(value) => setFilters((current) => ({ ...current, meal_type: value }))}
@@ -269,7 +272,12 @@ export function MealsPage() {
       ) : null}
 
       {!mealsQuery.isLoading && !mealsQuery.isError ? (
-        <>
+        <div
+          aria-busy={isRefreshingResults}
+          className={`transition-opacity duration-200 ${
+            isRefreshingResults ? "pointer-events-none opacity-55" : "opacity-100"
+          }`}
+        >
           {allMeals.length > 0 ? (
             <div className="space-y-5 sm:space-y-6">
               {groupedMeals.map((group) => (
@@ -313,6 +321,7 @@ export function MealsPage() {
                 ) : null}
                 {mealsQuery.hasNextPage ? (
                   <Button
+                    disabled={isRefreshingResults}
                     onClick={() => void mealsQuery.fetchNextPage()}
                     type="button"
                     variant="outline"
@@ -334,7 +343,7 @@ export function MealsPage() {
               onClearFilters={resetFilters}
             />
           )}
-        </>
+        </div>
       ) : null}
 
       <MealsFilterDrawer

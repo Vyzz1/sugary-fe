@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatMealType } from "../../today/-hooks/add-meal.helpers";
 import type { TodayMeal } from "../../today/-queries/today.query";
@@ -16,6 +16,7 @@ const mealTypeOptions: Array<TodayMeal["meal_type"] | "all"> = [
 
 export function MealsDesktopFilterBar({
   endDate,
+  isRefreshing = false,
   mealType,
   onEndDateChange,
   onMealTypeChange,
@@ -27,6 +28,7 @@ export function MealsDesktopFilterBar({
   startDate,
 }: {
   endDate: string;
+  isRefreshing?: boolean;
   mealType: TodayMeal["meal_type"] | "all";
   onEndDateChange: (value: string) => void;
   onMealTypeChange: (value: TodayMeal["meal_type"] | "all") => void;
@@ -45,12 +47,19 @@ export function MealsDesktopFilterBar({
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="h-11 rounded-xl border-border bg-background pl-10"
+              className="h-11 rounded-xl border-border bg-background pr-10 pl-10"
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Search by dish name"
               type="search"
               value={search}
             />
+            {isRefreshing ? (
+              <Loader2
+                aria-label="Updating results"
+                className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
+                role="status"
+              />
+            ) : null}
           </div>
         </label>
 
