@@ -7,6 +7,31 @@ export type ImagePickerIntent = "camera" | "library" | "upload" | "manual";
 
 const consumedAutoOpenKeys = new Set<number>();
 
+function extractImageFromClipboard(clipboardData: DataTransfer | null) {
+  if (!clipboardData) {
+    return null;
+  }
+
+  for (const item of Array.from(clipboardData.items)) {
+    if (item.kind !== "file" || !item.type.startsWith("image/")) {
+      continue;
+    }
+
+    const file = item.getAsFile();
+    if (!file) {
+      continue;
+    }
+
+    const extension = file.type.split("/")[1]?.split("+")[0] || "png";
+    return new File([file], file.name || `pasted-image.${extension}`, {
+      type: file.type,
+      lastModified: file.lastModified,
+    });
+  }
+
+  return null;
+}
+
 export function ImagePicker({
   imagePreviewUrl,
   onFileChange,
@@ -27,6 +52,8 @@ export function ImagePicker({
   const libraryInputRef = useRef<HTMLInputElement | null>(null);
   const desktopInputRef = useRef<HTMLInputElement | null>(null);
   const lastAutoOpenKeyRef = useRef<number | null>(null);
+  const onFileChangeRef = useRef(onFileChange);
+  onFileChangeRef.current = onFileChange;
 
   useEffect(() => {
     if (lastAutoOpenKeyRef.current === autoOpenKey || consumedAutoOpenKeys.has(autoOpenKey)) {
@@ -44,6 +71,21 @@ export function ImagePicker({
       desktopInputRef.current?.click();
     }
   }, [autoOpenKey, preferredIntent]);
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const pastedImage = extractImageFromClipboard(event.clipboardData);
+      if (!pastedImage) {
+        return;
+      }
+
+      event.preventDefault();
+      onFileChangeRef.current(pastedImage);
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
 
   const handlePick = () => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,6 +135,17 @@ export function ImagePicker({
             <span className="md:hidden">Choose from library</span>
             <span className="hidden md:inline">Upload image</span>
           </Button>
+          <p className="hidden text-xs text-muted-foreground sm:col-span-2 md:block">
+            Or paste an image from your clipboard with{" "}
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[11px]">
+              Ctrl
+            </kbd>{" "}
+            +{" "}
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[11px]">
+              V
+            </kbd>
+            .
+          </p>
         </div>
       )}
 
