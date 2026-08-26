@@ -26,6 +26,7 @@ import { useRunDailyReportMutation } from "../-hooks/useRunDailyReportMutation";
 import { useRunWeeklyReportMutation } from "../-hooks/useRunWeeklyReportMutation";
 import { useWeeklyReportQuery } from "../-hooks/useWeeklyReportQuery";
 import type { DailyReportData, WeeklyReportData } from "../-queries/report.query";
+import RerunReport from "./rerun-report";
 
 export function ReportsPage() {
   const [mode, setMode] = useState<ReportMode>("daily");
@@ -43,6 +44,13 @@ export function ReportsPage() {
     (mode === "daily"
       ? isDailyReportNotFound(activeQuery.error)
       : isWeeklyReportNotFound(activeQuery.error));
+
+  const isFallback =
+    activeQuery.isSuccess &&
+    Boolean(
+      activeQuery.data.data.ai_insight_source === "fallback" ||
+      activeQuery.data.data.ai_insight_status === "fallback"
+    );
 
   const handleGenerateReport = () => {
     if (mode === "daily") {
@@ -72,6 +80,14 @@ export function ReportsPage() {
         onWeekStartChange={handleWeekStartChange}
         weekStart={weekStart}
       />
+
+      {isFallback && (
+        <RerunReport
+          mode={mode}
+          isGenerating={activeMutation.isPending}
+          onGenerate={handleGenerateReport}
+        />
+      )}
 
       {activeMutation.isSuccess ? (
         <div className="rounded-2xl border border-primary/12 bg-primary/6 px-4 py-3 text-sm text-primary">
