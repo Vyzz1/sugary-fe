@@ -11,7 +11,15 @@ export function useRunDailyReportMutation() {
 
   return useMutation({
     mutationFn: async (date: string) => {
-      const response = await api.post<DailyReportResponse>(BASE_RUN_DAILY_REPORT_URL, { date });
+      const response = await api.post<DailyReportResponse>(
+        BASE_RUN_DAILY_REPORT_URL,
+        {},
+        {
+          params: {
+            date,
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: async (_data, date) => {

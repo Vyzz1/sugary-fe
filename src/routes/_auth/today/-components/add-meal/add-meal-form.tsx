@@ -384,6 +384,7 @@ export function AddMealForm({
                 onSelectMeal={(meal) => {
                   setSelectedRecentMeal(meal);
                   setRecentError(null);
+                  form.setValue("meal_type", meal.meal_type);
                 }}
                 selectedMeal={selectedRecentMeal}
               />
